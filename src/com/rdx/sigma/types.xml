@@ -1,0 +1,125 @@
+<types  supercategory="Science and Education">
+
+  <type name="type_rdx_instrument" foruser="false" description="Radiometrics Instrument"  category="Geoscience Data">
+     <property name="icon" value="/rdx/rdx.png"/>
+     <property name="form.resource.show" value="false"/>
+     <property name="form.area.show" value="false"/>
+     <property name="form.location.show" value="true"/>
+     <property name="form.datatype.show" value="false"/>
+     <property name="form.altitude.show" value="true"/>
+   </type>
+
+
+  <type name="type_rdx_radiometer"  super="type_rdx_instrument" description="Radiometrics Radiometer" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler"    xxxmetadata="project_pi,project_person,project_funding,enum_tag,content.keyword">
+     <column name="ip_address"  type="string" label="IP Address"/>
+     <column name="user_id"  type="string"  label="User ID"/>
+     <column name="password"  type="password"  label="FTP User Password"/>
+     <column name="active"  type="boolean"  default="true" label="Active"/>
+     <wiki><![CDATA[
++section title={{name}}
+<div style="max-height: 400px; overflow-y: auto;">
+{{description wikify="true"}}
+</div>
+{{mapentry width="350" message=""}}
+<p>
+:heading Instrument Information
+TBD
+
+{{tree title="Data" details="false" showtoggle="false" message="" prefix="==Data=="}}
+
+-section
+]]>
+</wiki>
+<children><![CDATA[
+<entries>
+<entry  name="Raw Soundings"  type="group"/>
+<entry  name="Sigma Soundings"  type="group"/>
+</entries>
+]]>
+</children>
+
+   </type>
+
+<!--
+  <type name="type_rdx_sounding"  description="Site" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" category="Science Project" mefirst="true">
+     <property name="icon" value="/fieldproject/site.png"/>
+     <property name="form.resource.show" value="false"/>
+     <property name="form.datatype.show" value="false"/>
+     <property name="form.altitude.show" value="true"/>
+     <property name="form.altitude.top.show" value="false"/>
+
+     <property name="search.label" value="Sites"/>
+     <property name="search.tabs" value="map,list"/>
+     <property name="search.form.date.show" value="false"/>
+
+
+     <column name="short_name"   label="Short Name"    cansearch="true"  showempty="false"/>
+     <column name="site_type" type="enumerationplus"  label="Site Type"    cansearch="true" values="file:/org/ramadda/geodata/fieldproject/resources/sitetypes.txt" showempty="false"/>
+     <column name="status" type="enumerationplus"  label="Status"    cansearch="true"  showempty="false"/>
+     <column name="network"   label="Network"    type="enumerationplus"   cansearch="true" iscategory="true"  showempty="false"/>
+     <column name="location"  type="string"  label="Where" rows="2" columns="60"  showempty="false"/>
+     <column name="country"   label="Country"    type="enumerationplus"  cansearch="true"  showempty="false" canlist="false"/>
+     <column name="state"   label="State/Province"    type="enumerationplus"  cansearch="true" showempty="false"  canlist="false" />
+     <column name="county"   label="County"    type="enumerationplus"  cansearch="true"  showempty="false"  canlist="false" />
+     <column name="local_x"   label="Local X Coordinate"    type="double"   default="0"  showempty="false"  canlist="false" />
+     <column name="local_y"   label="Local Y Coordinate"    type="double"   default="0"  showempty="false"  canlist="false" />
+     <column name="local_projection"   label="Local Projection"    type="enumerationplus"   showempty="false"  canlist="false" />
+     <column name="vertical_datum"   label="Vertical Datum"    type="enumerationplus"   showempty="false"  canlist="false" />
+     <column name="latlong_datum"   label="Horizontal Datum"    type="enumerationplus"   showempty="false"  canlist="false" />
+     <column name="position_accuracy"   label="Position Accuracy"    type="double"  suffix="meters"  default="0"  showempty="false"  canlist="false" />
+
+
+     <wiki><![CDATA[
+{{noheading}}
++inset
+<table width="100%" cellpadding="5" cellspacing="5">
+<tr valign=top>
+<td width="50%">
+:title {{name}}
+<div style="max-height: 400px; overflow-y: auto;">
+{{description wikify="true"}}
+</div>
+
+==Site Information==
+<table class="formtable">
+     {{resource row.label="URL:"  message=""}}
+     {{field name="short_name"  row.label="Short Name"}}
+     {{field name="site_type"   row.label="Site Type"}}
+     {{field name="status"      row.label="Status"}}
+     {{field name="network"     row.label="Network"}}
+     {{field name="location"    row.label="Where"}}
+     {{field name="country"     row.label="Country"}}
+     {{field name="state"       row.label="State/Province"}}
+     {{field name="county"      row.label="County"}}
+</table>
+
+
+{{properties metadata.types="!project_pi" message="" }}
+
+
+</td>
+<td width="50%">
+{{image src="::*" message="" width="300"}}
+<p>
+{{mapentry width="350" message=""}}
+<p>
+
+{{tree title="Data" details="false" showtoggle="false" message="" prefix="==Data=="}}
+
+</td></tr>
+
+</table>
+
+-inset
+
+]]>
+</wiki>
+
+
+
+   </type>
+
+-->
+
+
+</types>
