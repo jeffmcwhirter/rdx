@@ -1,8 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="plugins" name="RDX Plugin">
-    <target name="plugins" >
-      <echo message="Building core plugins"/>
-      <ant antfile="${basedir}/src/com/rdx/sigma/build.xml" inheritAll="false"/>
+<project basedir="." default="radiometrics" name="rdx plugin">
+    <target name="init">
+      <property file="${basedir}/build.properties"/>
     </target>
-    
+
+    <target name="radiometrics" depends="init">
+      <mkdir dir="${dist_dir}"/>
+      <property name="plugin" value="rdx"/>
+      <property name="plugin_dir" value="com/radiometrics/plugin"/>
+      <property name="plugin_group" value="projectplugins"/>
+      <ant target="plugin"/>
+    </target>
+       
+   <target name="clean" depends="init">
+        <delete>
+            <fileset dir="${src_dir}" includes="**/*.class"/>
+        </delete>
+    </target>
+
+    <target name="plugin" depends="clean">
+	<echo message="classpath:${classpath}"/>
+        <javac
+            classpath="${classpath}"
+            verbose="false"
+            debug="true"
+            deprecation="false" 
+            nowarn="true"
+            srcdir="${src_dir}"
+	    destdir="${src_dir}"
+            failonerror="${javac.failonerror}"
+            fork="${javac.fork}"
+            source="${javac.version}"
+            target="${javac.version}">
+        <include name="${plugin_dir}/*.java"/>
+        </javac>
+
+        <jar 
+            basedir="${src_dir}"
+            update="false"
+            compress="true"
+            jarfile="${dist_dir}/${plugin_jar}">
+            <include name="${plugin_dir}/**/*.class"/>
+            <include name="${plugin_dir}/htdocs/**/*"/>
+            <include name="${plugin_dir}/resources/**/*"/>
+            <include name="${plugin_dir}/**/*.xml"/>
+            <include name="${plugin_dir}/**/*.sql"/>
+            <include name="${plugin_dir}/**/*.txt"/>
+            <include name="${plugin_dir}/**/*.html"/>
+            <include name="${plugin_dir}/**/*.properties"/>
+	    </jar>
+        <copy overwrite="true" file="${dist_dir}/${plugin_jar}"  todir="${user.home}/.ramadda/plugins"/>
+    </target>
+
+
 </project>
