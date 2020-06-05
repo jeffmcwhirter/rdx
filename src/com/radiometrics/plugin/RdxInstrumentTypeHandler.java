@@ -19,7 +19,13 @@ package com.radiometrics.plugin;
 
 import org.ramadda.repository.*;
 import org.ramadda.repository.type.*;
+import org.ramadda.data.services.PointTypeHandler;
+import org.ramadda.data.point.text.CsvFile;
+import org.ramadda.data.point.text.*;
 
+import org.ramadda.data.record.*;
+import java.io.*;
+import java.text.SimpleDateFormat;
 
 import org.ramadda.util.HtmlUtils;
 
@@ -36,21 +42,48 @@ import java.util.List;
  *
  *
  */
-public class RdxInstrumentTypeHandler extends ExtensibleGroupTypeHandler {
+public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
+    /** _more_          */
     private static int IDX = 0;
-    public static final int IDX_INSTRUMENT_ID=IDX++;
-    public static final int     IDX_IPADDRESS=IDX++;
-    public static final int     IDX_COMPUTEROS=IDX++;
-    public static final int     IDX_CONTACT_NAME=IDX++;
-    public static final int     IDX_CONTACT_EMAIL=IDX++;
-    public static final int     IDX_CITY=IDX++;
-    public static final int     IDX_STATE=IDX++;
-    public static final int     IDX_LAST_MAINTENANCE=IDX++;
-    public static final int     IDX_NETWORK_UP=IDX++;
-    public static final int     IDX_DATA_DOWN=IDX++;
-    public static final int     IDX_LAST_NETWORK_CONNECTION=IDX++;
-    public static final int     IDX_LAST_DATA=IDX++;
+
+    /** _more_          */
+    public static final int IDX_INSTRUMENT_ID = IDX++;
+
+    /** _more_          */
+    public static final int IDX_IPADDRESS = IDX++;
+
+    /** _more_          */
+    public static final int IDX_COMPUTEROS = IDX++;
+
+    /** _more_          */
+    public static final int IDX_CONTACT_NAME = IDX++;
+
+    /** _more_          */
+    public static final int IDX_CONTACT_EMAIL = IDX++;
+
+    /** _more_          */
+    public static final int IDX_CITY = IDX++;
+
+    /** _more_          */
+    public static final int IDX_STATE = IDX++;
+
+    public static final int IDX_MONITORING_ENABLED= IDX++;    
+
+    /** _more_          */
+    public static final int IDX_LAST_MAINTENANCE = IDX++;
+
+    /** _more_          */
+    public static final int IDX_NETWORK_UP = IDX++;
+
+    /** _more_          */
+    public static final int IDX_DATA_DOWN = IDX++;
+
+    /** _more_          */
+    public static final int IDX_LAST_NETWORK_CONNECTION = IDX++;
+
+    /** _more_          */
+    public static final int IDX_LAST_DATA = IDX++;
 
 
 
@@ -69,10 +102,122 @@ public class RdxInstrumentTypeHandler extends ExtensibleGroupTypeHandler {
     }
 
 
+    /**
+     * _more_
+     *
+     * @param entry _more_
+     *
+     * @return _more_
+     */
     @Override
     public boolean canCache(Entry entry) {
-	return false;
+        return false;
     }
+
+    @Override
+    public boolean isGroup() {
+        return true;
+    }
+
+    /**
+     * _more_
+     *
+     * @param request _more_
+     * @param entry _more_
+     *
+     * @return _more_
+     *
+     * @throws Exception _more_
+     */
+    @Override
+    public RecordFile doMakeRecordFile(Request request, Entry entry)
+            throws Exception {
+        return new RdxRecordFile(request, entry);
+    }
+
+
+    public class RdxRecordFile extends CsvFile {
+
+        /** _more_ */
+        private Request request;
+
+        /** _more_ */
+        private Entry entry;
+
+        /**
+         * _more_
+         *
+         * @param request _more_
+         * @param entry _more_
+         *
+         * @throws IOException _more_
+         */
+        public RdxRecordFile(Request request, Entry entry) throws IOException {
+            this.request = request;
+            this.entry   = entry;
+        }
+
+        /**
+         * _more_
+         *
+         * @param visitInfo _more_
+         * @param record _more_
+         * @param howMany _more_
+         *
+         * @return _more_
+         *
+         * @throws Exception _more_
+         */
+        @Override
+        public boolean skip(VisitInfo visitInfo, Record record, int howMany)
+                throws Exception {
+            //noop as the DB call does this
+            return true;
+        }
+
+        /**
+         * _more_
+         *
+         * @param buffered _more_
+         *
+         * @return _more_
+         *
+         * @throws Exception _more_
+         */
+        @Override
+        public InputStream doMakeInputStream(boolean buffered)
+                throws Exception {
+            boolean debug = false;
+            makeFields(request);
+            SimpleDateFormat sdf =
+                RepositoryUtil.makeDateFormat("yyyyMMdd'T'HHmmss");
+            StringBuilder s     = new StringBuilder("#converted stream\n");
+	    List<InstrumentLog> instrumentLogs = InstrumentLog.readInstrumentsLog(entry.getTypeHandler().getRepository(), entry);
+            ByteArrayInputStream bais =
+                new ByteArrayInputStream(s.toString().getBytes());
+            return bais;
+        }
+
+        /**
+         * _more_
+         *
+         * @param request _more_
+         *
+         * @throws Exception _more_
+         */
+        private void makeFields(Request request) throws Exception {
+            boolean      debug     = false;
+            StringBuilder fields = new StringBuilder();
+	    fields.append(
+			  makeField(
+				    "latitude", attrType(RecordField.TYPE_DOUBLE),
+				    attrLabel("Latitude")));
+	    fields.append(",");
+            putProperty(PROP_FIELDS, fields.toString());
+        }
+    }
+
+
 
     /**
      * _more_
@@ -87,16 +232,32 @@ public class RdxInstrumentTypeHandler extends ExtensibleGroupTypeHandler {
     @Override
     public String getEntryIconUrl(Request request, Entry entry)
             throws Exception {
-	return super.getEntryIconUrl(request, entry);
-	//        return getIconUrl(icon);
+        return super.getEntryIconUrl(request, entry);
+        //        return getIconUrl(icon);
     }
 
 
-    public String decorateValue(Request request, Entry entry, Column column, String s) {
-	if(!column.getName().equals("data_down")) return super.decorateValue(request,entry, column, s);
-	Date d  = (Date)entry.getValue(IDX_LAST_DATA);
-	if(d==null) return super.decorateValue(request,entry, column, s);
-	return s;
+    /**
+     * _more_
+     *
+     * @param request _more_
+     * @param entry _more_
+     * @param column _more_
+     * @param s _more_
+     *
+     * @return _more_
+     */
+    public String decorateValue(Request request, Entry entry, Column column,
+                                String s) {
+        if ( !column.getName().equals("data_down")) {
+            return super.decorateValue(request, entry, column, s);
+        }
+        Date d = (Date) entry.getValue(IDX_LAST_DATA);
+        if (d == null) {
+            return super.decorateValue(request, entry, column, s);
+        }
+
+        return s;
     }
 
 

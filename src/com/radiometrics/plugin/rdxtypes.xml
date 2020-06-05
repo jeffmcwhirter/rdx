@@ -18,33 +18,28 @@ convertData="derived(field=minutes_since, function=Math.round(Utils.toMinutes(ne
 {{display_blank hideFilterWidget=false showMenu=true}}
 {{display_table  height="300"  showMenu=true
 linkField=entry_url iconField=icon  
-fields="name,instrument_id,type,city,state,network_up,data_down,minutes_since"
+fields="name,instrument_id,typeName,city,state,network_up,data_down,minutes_since"
 data_down.colorTable=plotly_reds
+minutes_since.colorTable=plotly_reds
 network_up.colorByMap="true:green,false:red"
-colorCells="network_up,data_down"
+colorCells="network_up,data_down,minutes_since"
 }} 
 {{display_barchart fields=data_down,minutes_since indexField=name forceStrings=true chartRight=80}}
 {{display_map  width="100%"  height="400" iconField=icon iconSize=16
-doGridPoints=true 
-showPoints=true
-lengthBy=data_down
-hm.colorBy=minutes_since
-hm.boundsScale=0.15
-cellShape=3dbar
-cellSizeHBase=5
-cellOffsetX=10
-cellOffsetY=9
-cellSize=8
-cellColor=yellow
-cellLabel="data: ${data_down}_nl_minutes: ${minutes_since}"
-cellLabelOffsetX=0
-cellLabelOffsetY=5
-gridWidth=800
-radius="12" 
-colorBy=network_up colorByMap="true:green,false:red"
-showColorTable=false 
 linkField=entry_url titleField=name descriptionField=description
-}} 
+doGridPoints=true  boundsScale=0.15
+showPoints=true
+radius="12"  strokeColor=transparent
+colorBy=testnumber
+colorBySteps=15,60,720
+colorTableShowRange=false
+colorTableLabels="0-15 minutes,15-60 minutes,1-12 hours,>12 hours"
+colors=green,yellow,red,purple
+xglyph1="type:label,pos:sw,label:data_colon_ ${data_down}_nl_minutes_colon_ ${minutes_since},dy:0,dx:5"
+xglyph3="type:axis,pos:sw,dx:15,dy:10,height:35,width:40"
+xglyph4="type:3dbar,pos:sw,dx:20,dy:10,height:30,width:8,baseHeight:5,sizeBy:testnumber"
+xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:minutes_since,color:red"
+}}
 -section
 ]]>
 </wiki>
@@ -63,11 +58,12 @@ linkField=entry_url titleField=name descriptionField=description
      <property name="form.altitude.top.show" value="false"/>
      <column name="instrument_id" type="string"  label="ID"   cansearch="true"  />
      <column name="ipaddress" type="string"  label="IP Address"  />     
-     <column name="computeros" type="enumerationplus"  label="Computer OS"   />
+     <column name="computer_os" type="enumerationplus"  label="Computer OS"   />
      <column name="contact_name" type="string"  label="Contact"   />
-     <column name="contact_email" type="string"  label="Contact Email"   />
+     <column name="contact_email" type="email"  label="Contact Email"   />
      <column name="city" type="enumerationplus"  label="City"   />
      <column name="state" type="enumerationplus"  label="State"   values="file:/org/ramadda/repository/resources/geo/statesmap.txt" cansearch="true" />
+     <column name="monitoring_enabled" type="boolean"  label="Monitoring Enabled" default="true"  />
      <column name="last_maintenance" type="datetime"  label="Last Maintenance Time"   />
      <column name="network_up" type="boolean"  label="Network Up" cansearch="true"  default="true">
        <display value="true" background="green"  mapFillColor="green"/>
@@ -76,33 +72,17 @@ linkField=entry_url titleField=name descriptionField=description
      <column name="data_down" type="int"  label="Data Down"   cansearch="true" />
      <column name="last_network_connection" type="datetime"  label="Last Network Connection"   />
      <column name="last_data" type="datetime"  label="Last Data Time"   />
+     <column name="testnumber" type="int"  label="Test number"   cansearch="true" >
+       <display min="0"  max="15" background="green"  mapFillColor="green"/>
+       <display min="15"  max="60" background="yellow"  mapFillColor="yellow"/>
+       <display min="60"  max="720" background="red"  mapFillColor="red"/>       
+       <display min="720"   background="purple"  mapFillColor="purple"/>       
+     </column>
      <bubble><![CDATA[
 :heading {{name link=true}}
 {{information details=true}}
 ]]>
 </bubble>
-<!--
-Create a website to display instrument status, including metadata and data status, for a minimum of 17
-instruments, but with capabilities to display over 100 instruments.
-Display instruments on a map with icons to differentiate between data status and instrument type (Wind Profilers,
-Radiometers, Sodars, and combinations of all three). The icons should be clickable to show instrument
-information.
-Instrument Information includes, but should not be limited to: Site Elevation, Lat/Lon, Computer OS, Site Contact
-Information, and Last site maintenance time.
-Send user alerts in the form of email for any data, network, or LDM information older than 1 hour repeating every 8
-hours until acknowledged. Texts older than 1 day should be sent in a text alert repeating once per day.
-Email and text lists should be customizable.
-Data status monitors include the following three components: Data, Network, and LDM.
-The ability to download the latest file from an AWS S3 bucket should also be included.
-Color coding for the instrument statuses should include:
-Green for current data less than 15 minutes old.
-Yellow for data less than 1 hour old.
-Red for data less than 12 hours old.
-Purple for anything older than 12 hours.
-Ability to display basic instrument data alongside instruments including fields such as Temperature, Relative
-Humidity and Pressure.
--->
-
      <wiki><![CDATA[
 +section title="Instrument: {{name}}"
 {{description wikify=true}}
@@ -124,16 +104,16 @@ Humidity and Pressure.
  </type>
 
  <type name="rdx_instrument_radiometer"  super="rdx_instrument"
-  description="RDX Wind Profiler" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+  description="RDX Radiometer" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
      <property name="icon" value="/rdx/radiometer.gif"/>
  </type>
 
  <type name="rdx_instrument_windprofiler"  super="rdx_instrument" description="RDX Wind Profiler" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
-     <property name="icon" value="/rdx/windprofiler.gif"/>
+     <property name="icon" value="/rdx/windprofiler.png"/>
  </type>
  
- <type ame="rdx_instrument_sodar"  description="RDX Sodar" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
-     <property name="icon" value="/rdx/sodar.gif"/>
+ <type name="rdx_instrument_sodar"  super="rdx_instrument" description="RDX Sodar" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+     <property name="icon" value="/rdx/sodar.png"/>
  </type>
 
 

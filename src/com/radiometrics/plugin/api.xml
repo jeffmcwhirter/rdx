@@ -2,6 +2,7 @@
 
 <api handler="com.radiometrics.plugin.RdxApiHandler" id="rdx">
   <api request="/rdx/status"    method="processStatus" xxxadmin="true"/>
+  <api request="/rdx/notifications"    method="processNotifications" admin="true"/>  
   <api request="/rdx/test"    method="processTest" admin="true"/>    
 </api>
 

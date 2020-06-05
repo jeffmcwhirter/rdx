@@ -72,10 +72,10 @@ public class InstrumentLog {
         "last_network_connection";
 
     /** _more_ */
-    public static final String COLUMN_LAST_DATA_TIME = "last_data_time";
+    public static final String COLUMN_LAST_DATA = "last_data";
 
     /** _more_ */
-    public static final String COLUMN_NETWORK_IS_UP = "network_is_up";
+    public static final String COLUMN_NETWORK_UP = "network_up";
 
     /** _more_ */
     public static final String COLUMN_DATA_DOWN = "data_down";
@@ -113,15 +113,42 @@ public class InstrumentLog {
         entryId = results.getString(COLUMN_ENTRY_ID);
         date = repository.getDatabaseManager().getTimestamp(results,
                 COLUMN_DATE, true);
-        networkIsUp = 1 == results.getInt(COLUMN_NETWORK_IS_UP);
+        networkIsUp = 1 == results.getInt(COLUMN_NETWORK_UP);
         dataDown    = results.getInt(COLUMN_DATA_DOWN);
         lastNetworkConnection =
             repository.getDatabaseManager().getTimestamp(results,
                 COLUMN_LAST_NETWORK_CONNECTION, true);
         lastDataTime = repository.getDatabaseManager().getTimestamp(results,
-                COLUMN_LAST_DATA_TIME, true);
+                COLUMN_LAST_DATA, true);
 
     }
+
+
+    private static String insert;
+    public static void store(Repository repository, Entry entry) throws Exception {
+	if(insert==null)
+	    insert = SqlUtil.makeInsert(TABLE,
+                                           new String[] {
+					    COLUMN_ENTRY_ID,
+					    COLUMN_DATE,
+					    COLUMN_INSTRUMENT_ID,
+					    COLUMN_LAST_NETWORK_CONNECTION,
+					    COLUMN_LAST_DATA,
+					    COLUMN_NETWORK_UP,
+					    COLUMN_DATA_DOWN
+					   });
+
+        repository.getDatabaseManager().executeInsert(insert,
+                                           new Object[] { entry.getId(),
+							  new Date(),
+							  entry.getValue(RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID),
+							  entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK_CONNECTION),
+							  entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_DATA),
+							  entry.getValue(RdxInstrumentTypeHandler.IDX_NETWORK_UP),
+							  entry.getValue(RdxInstrumentTypeHandler.IDX_DATA_DOWN)});
+							  
+    }
+
 
     /**
      * _more_
