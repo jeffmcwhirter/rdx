@@ -144,23 +144,29 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     private List<Instrument> readInstruments() throws Exception {
         Connection       connection  = getRdxConnection();
-        List<Instrument> instruments = new ArrayList<Instrument>();
-        Statement stmt = SqlUtil.select(connection, "*",
-                                        Misc.newList(InstrumentStatus.TABLE),
-                                        Clause.and(new ArrayList<Clause>()),
-                                        "", 100);
+	if(connection==null) {
+	    log("Failed to get database connection");
+	    return null;
+	}
         try {
-            SqlUtil.Iterator iter = new SqlUtil.Iterator(stmt);
-            ResultSet        results;
-            while ((results = iter.getNext()) != null) {
-                instruments.add(new Instrument(this, results));
-            }
-        } finally {
-            stmt.close();
-            connection.close();
-        }
-
-        return instruments;
+	    List<Instrument> instruments = new ArrayList<Instrument>();
+	    Statement stmt = SqlUtil.select(connection, "*",
+					    Misc.newList(InstrumentStatus.TABLE),
+					    Clause.and(new ArrayList<Clause>()),
+					    "", 100);
+	    try {
+		SqlUtil.Iterator iter = new SqlUtil.Iterator(stmt);
+		ResultSet        results;
+		while ((results = iter.getNext()) != null) {
+		    instruments.add(new Instrument(this, results));
+		}
+	    } finally {
+		stmt.close();
+	    }
+	    return instruments;
+	} finally {
+	    connection.close();
+	}
     }
 
 
@@ -177,17 +183,11 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         List<Notification> notifications = new ArrayList<Notification>();
         Statement stmt = getDatabaseManager().select("*",
                              Misc.newList(Notification.TABLE), null);
-        try {
-            Date             now  = new Date();
-            SqlUtil.Iterator iter = new SqlUtil.Iterator(stmt);
-            ResultSet        results;
-            while ((results = iter.getNext()) != null) {
-                notifications.add(new Notification(this, results));
-            }
-        } finally {
-            SqlUtil.close(stmt);
-        }
-
+	SqlUtil.Iterator iter = getDatabaseManager().getIterator(stmt);
+	ResultSet        results;
+	while ((results = iter.getNext()) != null) {
+	    notifications.add(new Notification(this, results));
+	}
         return notifications;
     }
 
@@ -372,6 +372,8 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
                     "Current Notifications")));
         sb.append(HtmlUtils.formTable());
         List<Instrument> instruments = readInstruments();
+	if(instruments==null) return new Result("",new StringBuilder("Failed to read instruments"));
+
         String           id          = request.getString("instrument_id");
         if (instruments.size() > 0) {
             sb.append(HtmlUtils.row(HtmlUtils.headerCols(new Object[] {
@@ -415,6 +417,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     private void checkInstruments() throws Exception {
         List<Instrument> instruments = readInstruments();
+	if(instruments==null) return;
 	boolean store = false;
 	Date now = new Date();
 	if(timeSinceLastInstrumentStore!=null) {
