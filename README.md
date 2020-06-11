@@ -1,4 +1,5 @@
-#Radiometrics RAMADDA
+
+# Radiometrics RAMADDA
 
 This holds the RAMADDA plugin for Radiometrics. This plugin relies on the RAMADDA source tree to be installed as a sibling of this  directory. Get the RAMADDA source with:
 <pre>
@@ -6,7 +7,8 @@ git clone https://github.com/geodesystems/ramadda.git
 </pre>
 
 # Building
-To build you need to have Java Ant installed (as well as Java JDK8+). Just run ant from the top-level directory.
+The plugin can be found in the <a href="lib">lib directory</a>. 
+To build the plugin you need to have Java Ant installed (as well as Java JDK8+). Just run ant from the top-level directory.
 <pre>
 ant
 </pre>
