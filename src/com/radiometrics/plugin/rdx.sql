@@ -1,32 +1,36 @@
 -----------------------------------------------------------------------
---- The pending event notifications
+--SQL for RAMADDA's notifications and log of instrument status
 -----------------------------------------------------------------------
-CREATE TABLE rdx_notifications (entry_id varchar(200),
-                  		   event_type varchar(200),
-				   date ramadda.datetime);
 
+-- The pending event notifications
+DROP TABLE rdx_notifications;
+CREATE TABLE rdx_notifications (entry_id varchar(200),
+                       		   event_type varchar(200),
+				   date ramadda.datetime,
+				   testint int,
+				   testdouble double);
+
+-- The time series of instrument status
+DROP TABLE rdx_instrument_status_log;
 CREATE TABLE rdx_instrument_status_log (
        entry_id varchar(200),
        date ramadda.datetime,
        instrument_id varchar(200),
-       last_network_connection ramadda.datetime,
-       last_data ramadda.datetime,
-       network_up int,
-       data_down int
+       last_network_time ramadda.datetime,
+       last_data_time ramadda.datetime,
+       last_ldm_time ramadda.datetime
 );
 
 
+-- alter table rdx_notifications add column description varchar(5000);
 
---- alter table rdx_notifications add column description varchar(5000);
-
-drop table rdx_test_instrument_status;
-
+--test table
+DROP TABLE rdx_test_instrument_status;
 CREATE TABLE rdx_test_instrument_status (
        instrument_id varchar(200),
        type varchar(200),
-       last_network_connection ramadda.datetime,
+       last_network_time ramadda.datetime,
        last_data_time ramadda.datetime,
-       network_up int,
-       data_down int
+       last_ldm_time ramadda.datetime
 );
 

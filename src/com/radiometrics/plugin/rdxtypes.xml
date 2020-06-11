@@ -47,7 +47,7 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
 
 
 
-  <type name="rdx_instrument"  description="RDX Instrument" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" category="RDX" foruser="false">
+  <type name="rdx_instrument"  description="RDX Instrument" handler="com.radiometrics.plugin.RdxInstrumentTypeHandler" category="RDX" foruser="false">
      <property name="icon" value="/rdx/system-monitor.png"/>
      <property name="form.date.show" value="false"/>
      <property name="form.area.show" value="false"/>
@@ -65,13 +65,9 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
      <column name="state" type="enumerationplus"  label="State"   values="file:/org/ramadda/repository/resources/geo/statesmap.txt" cansearch="true" />
      <column name="monitoring_enabled" type="boolean"  label="Monitoring Enabled" default="true"  />
      <column name="last_maintenance" type="datetime"  label="Last Maintenance Time"   />
-     <column name="network_up" type="boolean"  label="Network Up" cansearch="true"  default="true">
-       <display value="true" background="green"  mapFillColor="green"/>
-       <display value="false" background="red"  mapFillColor="red"/>
-     </column>
-     <column name="data_down" type="int"  label="Data Down"   cansearch="true" />
-     <column name="last_network_connection" type="datetime"  label="Last Network Connection"   />
+     <column name="last_network" type="datetime"  label="Last Network Connection"   />
      <column name="last_data" type="datetime"  label="Last Data Time"   />
+     <column name="last_ldm" type="datetime"  label="Last LDM Time"   />
      <column name="testnumber" type="int"  label="Test number"   cansearch="true" >
        <display min="0"  max="15" background="green"  mapFillColor="green"/>
        <display min="15"  max="60" background="yellow"  mapFillColor="yellow"/>
@@ -94,25 +90,21 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
 {{mapentry}}
 -col
 -row
-----
-:heading Data
-{{group changeEntries=true changeEntriesLabel="Select Skewt" }} 
-{{display type="skewt" entry="child:" showProgress=true message=""}}
 -section
 ]]>
 </wiki>
  </type>
 
  <type name="rdx_instrument_radiometer"  super="rdx_instrument"
-  description="RDX Radiometer" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+  description="RDX Radiometer" xhandler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
      <property name="icon" value="/rdx/radiometer.gif"/>
  </type>
 
- <type name="rdx_instrument_windprofiler"  super="rdx_instrument" description="RDX Wind Profiler" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+ <type name="rdx_instrument_windprofiler"  super="rdx_instrument" description="RDX Wind Profiler" xhandler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
      <property name="icon" value="/rdx/windprofiler.png"/>
  </type>
  
- <type name="rdx_instrument_sodar"  super="rdx_instrument" description="RDX Sodar" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+ <type name="rdx_instrument_sodar"  super="rdx_instrument" description="RDX Sodar" xhandler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
      <property name="icon" value="/rdx/sodar.png"/>
  </type>
 
