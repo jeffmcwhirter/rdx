@@ -2,7 +2,7 @@
 
 This holds the RAMADDA plugin for Radiometrics. This plugin relies on the RAMADDA source tree to be installed as a sibling of this  directory. Get the RAMADDA source with:
 <pre>
-   git clone https://github.com/geodesystems/ramadda.git
+git clone https://github.com/geodesystems/ramadda.git
 </pre>
 
 # Building
@@ -18,7 +18,7 @@ This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins di
 
 Along with the rdxplugin.jar you will need to specify the JDBC URL for the external instrument status database. This takes the form of:
 <pre>
-rdx.db.url=jdbc:&lt;database type&gt=;:&lt;database path&gt;
+rdx.db.url=jdbc:&lt;database type&gt;:&lt;database path&gt;
 </pre>
 
 e.g. for running with Derby use:
