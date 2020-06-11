@@ -14,16 +14,17 @@ To build the plugin you need to have Java Ant installed (as well as Java JDK8+).
 ant
 </pre>
 
-This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins directory. To release it to an external server you'll need to copy the plugin to the server's ramadda/plugins directory.
+This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins directory. To release it to an external server you'll need to copy the plugin to the server's ramadda/plugins directory and restart the repository.
 
 As a convenience we make a release of the plugin in the <a href="lib">lib directory</a>. 
 
 
 # Configuration
 
-Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database, configure email settings, configure SMS settings. 
-
-These configuration options are set in the rdx.properties file (example <a href="blob/master/src/com/radiometrics/plugin/rdx.properties">here</a>. If not already done so copy this file to your RAMADDA server's
+Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database, email and SMS settings.
+These configuration options are set in the rdx.properties file 
+(example <a href="rdx.properties">here</a>). 
+If not already done so copy this file to your RAMADDA server's
 <a href="https://geodesystems.com/repository/userguide/installing.html#home">home directory</a>.
 
 ## Configuring the RDX database
