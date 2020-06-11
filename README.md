@@ -18,7 +18,6 @@ This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins di
 
 As a convenience we make a release of the plugin in the <a href="lib">lib directory</a>. 
 
-
 # Configuration
 
 Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database, email and SMS settings.
@@ -86,13 +85,14 @@ The contents are:
 
 * RdxInstrumentTypeHandler.java - Represents the instruments. Just does the decoration of the datetime values
 
+* rdx.sql - Creates the test database table and the notification db
+
+* rdxtypes.xml - Defines the entry types - rdx instrument collection, rdx instrument. Note - the default page display
+for collections and instruments is defined within this xml file as an embedded <i>wiki</i> tag.
 
 * metadata.xml - Defines the notification metadata
 
-
-* rdx.sql - Creates the test database table and the notification db
-
-* rdxtypes.xml - Defines the entry types - rdx instrument collection, rdx instrument
+* rdxtemplate.html - provides the Radiometrics page template
 
 * htdocs/rdx/ - Holds images, documentation page, etc
 
