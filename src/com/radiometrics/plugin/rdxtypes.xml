@@ -57,23 +57,16 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
      <property name="form.altitude.show" value="true"/>
      <property name="form.altitude.top.show" value="false"/>
      <column name="instrument_id" type="string"  label="ID"   cansearch="true"  />
-     <column name="ipaddress" type="string"  label="IP Address"  />     
-     <column name="computer_os" type="enumerationplus"  label="Computer OS"   />
      <column name="contact_name" type="string"  label="Contact"   />
      <column name="contact_email" type="email"  label="Contact Email"   />
      <column name="city" type="enumerationplus"  label="City"   />
      <column name="state" type="enumerationplus"  label="State"   values="file:/org/ramadda/repository/resources/geo/statesmap.txt" cansearch="true" />
-     <column name="monitoring_enabled" type="boolean"  label="Monitoring Enabled" default="true"  />
+     <column name="computer_os" type="enumerationplus"  label="Computer OS"   />
      <column name="last_maintenance" type="datetime"  label="Last Maintenance Time"   />
+     <column name="monitoring_enabled" type="boolean"  label="Monitoring Enabled" default="true"  />
      <column name="last_network" type="datetime"  label="Last Network Connection"   />
      <column name="last_data" type="datetime"  label="Last Data Time"   />
      <column name="last_ldm" type="datetime"  label="Last LDM Time"   />
-     <column name="testnumber" type="int"  label="Test number"   cansearch="true" >
-       <display min="0"  max="15" background="green"  mapFillColor="green"/>
-       <display min="15"  max="60" background="yellow"  mapFillColor="yellow"/>
-       <display min="60"  max="720" background="red"  mapFillColor="red"/>       
-       <display min="720"   background="purple"  mapFillColor="purple"/>       
-     </column>
      <bubble><![CDATA[
 :heading {{name link=true}}
 {{information details=true}}
