@@ -5,7 +5,7 @@ git clone https://github.com/geodesystems/ramadda.git
 
 # Building
 To build you need to have Java Ant installed (as well as Java JDK8+). Just run ant from the top-level directory.
-ant
+   ant
 
 This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins directory. To release it to an external server you'll need to copy the plugin to the server's ramadda/plugins directory.
 
@@ -37,7 +37,7 @@ In the external repository.properties file on your server you need to specify th
 
 # Text message notifications
 
-To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins. If t you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it into the server's ramadda/plugins direcotry.
+To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins. If you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it into the server's ramadda/plugins directory.
 
 
 The phone plugin uses <a href="https://www.twilio.com/">Twilio</a> as the message gateway. 
@@ -55,29 +55,31 @@ The RDX plugin is in:
 
   src/com/radiometrics/plugin
 
-* RdxApiHandler.java
+* rdx.properties
 
-This is a singleton classthat gets instantiated at runtime. Implements the /rdx/status page. Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
+Placeholder file for defining the external RDX db. Copy this into your RAMADDA home directory and edit it with your DB info
 
-* RdxInstrumentTypeHandler.java
-
-Represents the instruments. Currently no functionality
 
 * api.xml
 
 Defines the api endpoints into RdxApiHandler
 
-* instruments.txt
+* RdxApiHandler.java
 
-Holds example instruments for testing
+This is a singleton class that gets instantiated at runtime. 
+Implements the /rdx/status and /rdx/notifications pages. 
+Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
+
+
+* RdxInstrumentTypeHandler.java
+
+Represents the instruments. Just does the decoration of the datetime values
+
 
 * metadata.xml
 
 Defines the notification metadata
 
-* rdx.properties
-
-Placeholder
 
 * rdx.sql
 
@@ -91,4 +93,7 @@ Defines the entry types - rdx instrument collection, rdx instrument
 
 Holds images, documentation page, etc
 
+* instruments.txt
+
+Holds example instruments for population the test instrument db
 
