@@ -113,14 +113,14 @@ public class RdxNotifications {
      * @throws Exception _more_
      */
     public RdxNotifications(ResultSet results) throws Exception {
-        entry_id   = results.getString(COL_ENTRY_ID);
-        event_type = results.getString(COL_EVENT_TYPE);
-        Timestamp date_ts = results.getTimestamp(COL_DATE);
+        entry_id   = results.getString(COL_NODOT_ENTRY_ID);
+        event_type = results.getString(COL_NODOT_EVENT_TYPE);
+        Timestamp date_ts = results.getTimestamp(COL_NODOT_DATE);
         if (date_ts != null) {
             date = new Date(date_ts.getTime());
         }
-        testint    = results.getInt(COL_TESTINT);
-        testdouble = results.getDouble(COL_TESTDOUBLE);
+        testint    = results.getInt(COL_NODOT_TESTINT);
+        testdouble = results.getDouble(COL_NODOT_TESTDOUBLE);
     }
 
     /**

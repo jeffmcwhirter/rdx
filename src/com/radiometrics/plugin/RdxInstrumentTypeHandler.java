@@ -44,12 +44,6 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     public static final int IDX_INSTRUMENT_ID = IDX++;
 
     /** index */
-    public static final int IDX_IPADDRESS = IDX++;
-
-    /** index */
-    public static final int IDX_COMPUTEROS = IDX++;
-
-    /** index */
     public static final int IDX_CONTACT_NAME = IDX++;
 
     /** index */
@@ -62,10 +56,14 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     public static final int IDX_STATE = IDX++;
 
     /** index */
-    public static final int IDX_MONITORING_ENABLED = IDX++;
+    public static final int IDX_COMPUTEROS = IDX++;
+
 
     /** index */
     public static final int IDX_LAST_MAINTENANCE = IDX++;
+
+    /** index */
+    public static final int IDX_MONITORING_ENABLED = IDX++;
 
     /** index */
     public static final int IDX_LAST_NETWORK = IDX++;

@@ -96,5 +96,3 @@ for collections and instruments is defined within this xml file as an embedded <
 
 * htdocs/rdx/ - Holds images, documentation page, etc
 
-* instruments.txt -  Holds example instruments for population the test instrument db
-

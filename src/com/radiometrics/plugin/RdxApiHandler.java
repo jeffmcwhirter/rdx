@@ -72,6 +72,10 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /** afre we currently running the monitoring */
     private boolean monitorInstruments;
 
+    private int networkThreshold;
+    private int dataThreshold;
+    private int ldmThreshold;
+
 
     /**
      *     ctor
@@ -82,10 +86,20 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     public RdxApiHandler(Repository repository) throws Exception {
         super(repository);
-        //Start running in 10 seconds to give the full repository time to start up
+
+	//Set the noticiation thresholds
+	int threshold = getRepository().getProperty("rdx.threshold",30);
+	networkThreshold = getRepository().getProperty("rdx.threshold.network", threshold);
+	dataThreshold = getRepository().getProperty("rdx.threshold.data", threshold);
+	ldmThreshold = getRepository().getProperty("rdx.threshold.ldm", threshold);
+
+	//Are we monitoring instruments
         monitorInstruments = getRepository().getProperty(PROP_RUN, true);
 
+        //Start running in 10 seconds to give the full repository time to start up
         int delayToStart = 10;
+	//Change the test db
+	processChangeInstruments(null);
         Misc.run(new Runnable() {
             public void run() {
                 Misc.sleepSeconds(delayToStart);
@@ -174,7 +188,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @throws Exception On badness
      */
-    private List<Instrument> readInstruments() throws Exception {
+    private List<InstrumentData> readInstruments() throws Exception {
         Connection connection = getRdxConnection();
         if (connection == null) {
             log("Failed to get database connection");
@@ -182,16 +196,22 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             return null;
         }
         try {
-            List<Instrument> instruments = new ArrayList<Instrument>();
+            List<InstrumentData> instruments =
+                new ArrayList<InstrumentData>();
             Statement stmt =
-                SqlUtil.select(connection, "*",
-                               Misc.newList(InstrumentStatus.TABLE),
-                               Clause.and(new ArrayList<Clause>()), "", 100);
+                SqlUtil.select(
+                    connection, InstrumentData.WHAT,
+                    Misc.newList(
+                        InstrumentData.TABLE,
+                        InstrumentData.TABLE2), Clause.join(
+                            InstrumentData.TABLE + ".instrument_id",
+                            InstrumentData.TABLE2 + ".instrument_id"), "",
+                                100);
             try {
                 SqlUtil.Iterator iter = new SqlUtil.Iterator(stmt);
                 ResultSet        results;
                 while ((results = iter.getNext()) != null) {
-                    instruments.add(new Instrument(this, results));
+                    instruments.add(new InstrumentData(this, results));
                 }
             } finally {
                 stmt.close();
@@ -324,14 +344,23 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @throws Exception On badness
      */
-    public Result processTest(Request request) throws Exception {
-        /*
-        getDatabaseManager().update(
-            InstrumentStatus.TABLE, InstrumentStatus.COLUMN_INSTRUMENT_ID,
-            request.getString("instrument_id", "radiometer1"),
-            new String[] { InstrumentStatus.COLUMN_NETWORK_UP },
-            new Object[] { new Integer(0) });
-        */
+    public Result processChangeInstruments(Request request) throws Exception {
+	for(int i=1;i<=16;i++) {
+	    Date now = new Date();
+	    Date network = new Date(now.getTime()-(long)(Math.random()*120*60*1000));
+	    Date data = new Date(now.getTime()-(long)(Math.random()*120*60*1000));
+	    Date ldm = new Date(now.getTime()-(long)(Math.random()*120*60*1000));
+	    getDatabaseManager().update(
+					InstrumentData.TABLE, 
+					InstrumentData.COLUMN_INSTRUMENT_ID,
+					""+i,
+					new String[] {
+					    InstrumentData.COLUMN_LAST_NETWORK,
+					    InstrumentData.COLUMN_LAST_DATA,
+					    InstrumentData.COLUMN_LAST_LDM},
+					new Object[] {network, data,ldm});
+	}
+	if(request == null) return null;
         return processStatus(request);
     }
 
@@ -476,7 +505,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         request.put("template", "radiometrics");
         StringBuilder sb = new StringBuilder();
         addHeader(request, sb, PATH_STATUS);
-        List<Instrument> instruments = readInstruments();
+        List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
             sb.append(
                 getPageHandler().showDialogWarning(
@@ -489,25 +518,27 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         String id = request.getString("instrument_id");
         if (instruments.size() > 0) {
             sb.append(HtmlUtils.row(HtmlUtils.headerCols(new Object[] {
-                "Instrument ID",
-                "Last Network Connection", "Last Data", "Last LDM" })));
+                "Site ID",
+                "Instrument ID", "Last Network Connection", "Last Data",
+                "Last LDM" })));
         }
-        for (Instrument instrument : instruments) {
-            Entry  entry = getInstrumentEntry(instrument);
-            String label = instrument.id;
+        for (InstrumentData instrument : instruments) {
+            Entry entry = getInstrumentEntry(instrument);
+            //TODO
+            String label = instrument.siteId;
             if (entry != null) {
                 label = HtmlUtils.href(getEntryManager().getEntryUrl(null,
                         entry), label);
             }
 
-            //      String label = HtmlUtils.href(getRepository().getUrlBase()+"/rdx/test?instrument_id="+instrument.id, instrument.id);
+
             sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] { label,
-                    instrument.network, instrument.data, instrument.ldm })));
+                    instrument.id, instrument.network, instrument.data,
+                    instrument.ldm })));
         }
         sb.append(HtmlUtils.formTableClose());
         if (instruments.size() == 0) {
             sb.append("No instruments found");
-            InstrumentStatus.addExampleInstruments(this);
         }
         sb.append(HtmlUtils.sectionClose());
 
@@ -523,7 +554,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * @throws Exception on badness
      */
     private void checkInstruments() throws Exception {
-        List<Instrument> instruments = readInstruments();
+        List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
             return;
         }
@@ -533,7 +564,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             store = (now.getTime() - timeSinceLastInstrumentStore.getTime())
                     / 1000 / 60 >= 60;
         }
-        for (Instrument instrument : instruments) {
+        for (InstrumentData instrument : instruments) {
             checkInstrument(instrument, store);
         }
         timeSinceLastInstrumentStore = now;
@@ -550,11 +581,12 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @throws Exception On Badness
      */
-    private Entry getInstrumentEntry(Instrument instrument) throws Exception {
+    private Entry getInstrumentEntry(InstrumentData instrument)
+            throws Exception {
         //Find the station entries
         Request tmpRequest = getRepository().getTmpRequest();
-        tmpRequest.put("type", "rdx_instrument");
-        String id = instrument.id;
+        tmpRequest.put("type", instrument.typeId);
+        String id = instrument.siteId;
         tmpRequest.put("search.rdx_instrument.instrument_id", id);
         List[]      result  = getEntryManager().getEntries(tmpRequest);
         List<Entry> entries = new ArrayList<Entry>();
@@ -563,10 +595,14 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         if (entries.size() == 0) {
             return null;
         }
-
         return entries.get(0);
     }
 
+
+    private int getMinutes(Date date) {
+	if(date == null) return 0;
+	return (int) (new Date().getTime()-date.getTime())/1000/60;
+    }
 
     /**
      * Checks whether we need to send notifications for the given instrument entry
@@ -578,15 +614,10 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * @throws Exception On badness
      */
     private boolean isInstrumentOk(Entry entry) throws Exception {
-        Date now = new Date();
-        Date network =
-            (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK);
-        Date data =
-            (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_DATA);
-        Date ldm =
-            (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM);
-
-        return true;
+        int network = getMinutes((Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK));
+        int data = getMinutes((Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_DATA));
+        int  ldm = getMinutes((Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM));
+        return network<networkThreshold && data<dataThreshold &&ldm<ldmThreshold;
     }
 
 
@@ -599,14 +630,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @throws Exception On badness
      */
-    private void checkInstrument(Instrument instrument, boolean store)
+    private void checkInstrument(InstrumentData instrument, boolean store)
             throws Exception {
         //Find the station entries
         Entry entry = getInstrumentEntry(instrument);
         if (entry == null) {
             log("checkInstrument: Could not find instrument: "
-                + instrument.id);
-
+                + instrument.siteId);
             return;
         }
 
@@ -627,8 +657,8 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         Date ldm =
             (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM);
 
-        System.err.println("checkInstrument:" + entry + " " + network + " "
-                           + data + " " + ldm);
+        System.err.println("checkInstrument:" + entry + " " + network + " " + instrument.network);
+	//                           + data + " " + ldm);
 
         if ( !Misc.equals(network, instrument.network)) {
             changed = true;
@@ -652,23 +682,19 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             InstrumentLog.store(repository, entry);
         }
 
-        System.err.println("\tchanged:" + changed);
         if ( !changed) {
             //if no change then done
             return;
         }
 
+	boolean ok = isInstrumentOk(entry);
+        System.err.println("\tchanged:" + changed +" ok:" + ok);
         //Save the ramadda entry
         getEntryManager().updateEntry(getRepository().getTmpRequest(), entry);
 
-
-
-
-
-        if (isInstrumentOk(entry)) {
+        if (ok) {
             //If all OK then remove any pending notification and return
             deleteNotification(entry);
-
             return;
         }
 
@@ -780,6 +806,29 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
 
+    /**
+     *  Hard code the rdx db type id to the ramadda type
+     *
+     * @param rdxType _more_
+     *
+     * @return _more_
+     */
+    public static String getRamaddaType(int rdxType) {
+        if (rdxType == 1) {
+            return "rdx_instrument_radiometer";
+        }
+        if (rdxType == 2) {
+            return "rdx_instrument_windprofiler";
+        }
+        if (rdxType == 3) {
+            return "rdx_instrument_sodar";
+        }
+
+        throw new IllegalArgumentException("Unknown instrument type:"
+                                           + rdxType);
+    }
+
+
 
 
     /**
@@ -789,71 +838,51 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * @version        $version$, Sat, May 23, '20
      * @author         Enter your name here...
      */
-    public static class InstrumentStatus {
+    public static class InstrumentData {
 
         /** db table name */
-        public static final String TABLE = "rdx_test_instrument_status";
+        public static final String TABLE = "rdx_test_instrument_data";
+
+        /** _more_          */
+        public static final String TABLE2 = "rdx_test_instrument_metadata";
 
         /** db column name */
-        public static final String COLUMN_INSTRUMENT_ID = "instrument_id";
+        public static final String COLUMN_SITE_ID = TABLE2 + ".site_id";
 
         /** db column name */
-        public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_TYPE_ID = TABLE2 + ".type_id";
 
         /** db column name */
-        public static final String COLUMN_LAST_NETWORK = "last_network_time";
+        public static final String COLUMN_INSTRUMENT_ID = TABLE
+                                                          + ".instrument_id";
 
         /** db column name */
-        public static final String COLUMN_LAST_DATA = "last_data_time";
+        public static final String COLUMN_LAST_NETWORK =
+            TABLE + ".last_network_time";
 
         /** db column name */
-        public static final String COLUMN_LAST_LDM = "last_ldm_time";
+        public static final String COLUMN_LAST_DATA = TABLE
+                                                      + ".last_data_time";
 
+        /** db column name */
+        public static final String COLUMN_LAST_LDM = TABLE + ".last_ldm_time";
 
-        /**
-         * add example insruments from instruments.txt
-         *
-         *
-         * @param apiHandler handler
-         * @throws Exception On badness
-         */
-        private static void addExampleInstruments(RdxApiHandler apiHandler)
-                throws Exception {
-            String insert = SqlUtil.makeInsert(TABLE,
-                                new String[] { COLUMN_INSTRUMENT_ID,
-                    COLUMN_TYPE, COLUMN_LAST_NETWORK, COLUMN_LAST_DATA,
-                    COLUMN_LAST_LDM, });
+        /** _more_          */
+        public static final String WHAT = SqlUtil.comma(COLUMN_SITE_ID,
+                                              COLUMN_TYPE_ID,
+                                              COLUMN_INSTRUMENT_ID,
+                                              COLUMN_LAST_NETWORK,
+                                              COLUMN_LAST_DATA,
+                                              COLUMN_LAST_LDM);
 
-            for (String line : StringUtil.split(
-                    apiHandler.getRepository().getResource(
-                        "/com/radiometrics/plugin/instruments.txt"), "\n", true, true)) {
-                if (line.startsWith("#")) {
-                    continue;
-                }
-                List<String> toks = StringUtil.split(line, ",");
-                apiHandler.getDatabaseManager().executeInsert(insert,
-                        new Object[] { toks.get(0),
-                                       toks.get(1),
-                                       Utils.parseDate(toks.get(2)),
-                                       Utils.parseDate(toks.get(3)),
-                                       Utils.parseDate(toks.get(4)) });
-            }
-        }
+        /** _more_          */
+        String siteId;
 
-    }
-
-
-
-
-    /**
-     * Holds the instrument info from the external rdx db
-     *
-     * @author         Jeff McWhirter
-     */
-    private static class Instrument {
+        /** _more_          */
+        String typeId;
 
         /** attribute */
-        String id;
+        int id;
 
         /** attribute */
         Date network;
@@ -868,25 +897,23 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         /**
          * ctor
          *
-         * @param api hadnler
+         * @param api handler
          * @param results db resulset
          *
          * @throws Exception On badness
          */
-        public Instrument(RdxApiHandler api, ResultSet results)
+        public InstrumentData(RdxApiHandler api, ResultSet results)
                 throws Exception {
-            id = results.getString(InstrumentStatus.COLUMN_INSTRUMENT_ID);
-
-            //TODO: read datetime differently
-            network = api.getDatabaseManager().getTimestamp(results,
-                    InstrumentStatus.COLUMN_LAST_NETWORK, true);
-
-            data = api.getDatabaseManager().getTimestamp(results,
-                    InstrumentStatus.COLUMN_LAST_DATA, true);
-            ldm = api.getDatabaseManager().getTimestamp(results,
-                    InstrumentStatus.COLUMN_LAST_LDM, true);
+            int idx = 1;
+            siteId  = results.getString(idx++);
+            typeId  = getRamaddaType(results.getInt(idx++));
+            id      = results.getInt(idx++);
+            network = results.getTimestamp(idx++, Repository.calendar);
+            data    = results.getTimestamp(idx++, Repository.calendar);
+            ldm     = results.getTimestamp(idx++, Repository.calendar);
         }
     }
+
 
 
     /**
