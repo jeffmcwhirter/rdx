@@ -6,6 +6,7 @@
 <div class="ramadda-section">
 <div class=ramadda-page-title>Radiometrics RAMADDA Services</div>
 
+
 <h2>RAMADDA Introduction</h2>
 RAMADDA comes with extensive <a href="https://geodesystems.com/repository/userguide/toc.html#index.html">documentation</a>. 
 
@@ -13,11 +14,30 @@ A brief summary of the Radiometrics instrument monitoring facility -
 <ul>
   <li> The content within RAMADDA is defined as a hierarchical collection of  entries. 
   <li> Entries can be of any number of types, e.g., a folder, a simple file, a wiki page, etc.
-  <li> The Radiometrics RAMADDA provides special purpose entry types - RDX Collection, RDX Radiometer, RDX Wind Profilder, etc
   <li> When viewing an entry (e.g., a folder, an instrument collection, a radiometer) there are a number of
     functions that are accessed via its <img src=${root}/icons/entrymenu.png width=24> menu link. These functions include editing, creating new entries, access control and delete.
-  <li> You can have any number of RDX collection, instruments, etc.,  and organize them in different ways. For example, one RDX collection can hold all of the production instruments while another collection can be used for test purposes.
+  <li> The Radiometrics RAMADDA provides special purpose entry types - RDX Collection, RDX Radiometer, RDX Wind Profilder, etc
+  <li> To create a new collection or instrument entry navigate to the desired parent entry, click on its menu. There should be a "New RDX Collection" or "New RDX Radiometer" link. If not, choose  "Pick a Type" and look for the desired entry type.
+
+  <li> RDX Instrument Collections
+
+  <ul>
+    <li> A RDX Instrument Collection entry holds any number of instrument entries and provide a predefined view of their instruments
+    <li> There can be any number of collection entries and they can used to organize instrument information in different ways. For example, one RDX collection can hold all of the production instruments while another collection can be used for test purposes.
+  </ul>
+
+  <li> RDX Instruments
+  <ul>
+    <li> When adding a new instrument (e.g,, radiometer, wind profiler, sodar) the <i>instrument id</i> is used
+    to key the RAMADDA instrument entry with the instrument status in the external database.
+    <li> RAMADDA  instrument entries can be created that do not have a corresponding instrument in the external database. 
+    <li> The instrument monitoring and notification process can be turned off for a particular instrument. 
+    <li> The fields - Last Network Connection, Last Data Connection and Last LDM Connection are set from the notification process. All other fields can be edited through RAMADDA.
+  </ul>
+
+  <li> View and edit access can be controlled to certain users. More information <a href="https://geodesystems.com/repository/userguide/access.html">here</a>.
 </ul>
+
 
 <h2>Specifying Notifications</h2>
 Notifications are specified using RAMADDA's entry properties  system. To add a new notification for an instrument collection -
@@ -39,6 +59,8 @@ There are 2 top-level entry points for viewing the external instrument database 
 <li> <a href="${root}/rdx/notifications">${root}/rdx/notifications</a>
 </ul>
 From the above pages you can also turn off/on the instrument monitoring and notification process.
+
+<p>
 
 <h2>Creating Alternative Views</h2>
 A number of standard views of instrument information have been provided, e.g. - tables, bar charts, maps, etc. 
