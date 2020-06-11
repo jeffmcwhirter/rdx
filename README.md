@@ -59,12 +59,12 @@ ramadda.admin.smtp.starttls=true
 
 ## Configuring text message settings
 
-To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins. If you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it into the server's ramadda/plugins directory.
+To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins. If you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it into the server's &lt;ramadda home dir&gt;/plugins directory.
 
 
 The phone plugin uses <a href="https://www.twilio.com/">Twilio</a> as the message gateway. 
 You will need to create an account with Twilio and configure your RAMADDA server. 
-The 2 main properties to set in your repository.properties are:
+The 2 main properties to set in your rdx.properties are:
 <pre>
 #Twilio app id
 twilio.appid=
@@ -79,45 +79,22 @@ The plugin is in: <a href=src/com/radiometrics/plugin>src/com/radiometrics/plugi
 
 The contents are:
 
-* rdx.properties
+* api.xml - Defines the api endpoints into RdxApiHandler
 
-Placeholder file for defining the external RDX db. Copy this into your RAMADDA home directory and edit it with your DB info
-
-
-* api.xml
-
-Defines the api endpoints into RdxApiHandler
-
-* RdxApiHandler.java
-
-This is a singleton class that gets instantiated at runtime. 
-Implements the /rdx/status and /rdx/notifications pages. 
-Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
+* RdxApiHandler.java - This is a singleton class that gets instantiated at runtime. Implements the /rdx/status and /rdx/notifications pages. Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
 
 
-* RdxInstrumentTypeHandler.java
-
-Represents the instruments. Just does the decoration of the datetime values
+* RdxInstrumentTypeHandler.java - Represents the instruments. Just does the decoration of the datetime values
 
 
-* metadata.xml
-
-Defines the notification metadata
+* metadata.xml - Defines the notification metadata
 
 
-* rdx.sql
+* rdx.sql - Creates the test database table and the notification db
 
-Creates the test database table and the notification db
+* rdxtypes.xml - Defines the entry types - rdx instrument collection, rdx instrument
 
-* rdxtypes.xml
+* htdocs/rdx/ - Holds images, documentation page, etc
 
-Defines the entry types - rdx instrument collection, rdx instrument
-
-* htdocs/rdx/
-
-Holds images, documentation page, etc
-
-* instruments.txt
-
-Holds example instruments for population the test instrument db
+* instruments.txt -  Holds example instruments for population the test instrument db
 
