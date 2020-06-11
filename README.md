@@ -74,7 +74,7 @@ twilio.authtoken=
 </pre>
 
 
-# Repository contents
+# Plugin contents
 The plugin is in: <a href=src/com/radiometrics/plugin>src/com/radiometrics/plugin</a>
 
 The contents are:
