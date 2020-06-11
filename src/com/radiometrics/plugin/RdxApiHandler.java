@@ -178,7 +178,6 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         Connection connection = getRdxConnection();
         if (connection == null) {
             log("Failed to get database connection");
-
             return null;
         }
         try {
@@ -478,13 +477,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         request.put("template", "radiometrics");
         StringBuilder sb = new StringBuilder();
         addHeader(request, sb, PATH_STATUS);
-        sb.append(HtmlUtils.formTable());
         List<Instrument> instruments = readInstruments();
         if (instruments == null) {
-            return new Result(
-                "", new StringBuilder("Failed to read instruments"));
+	    sb.append(getPageHandler().showDialogWarning("Failed to read instruments"));
+            return new Result("",sb);
         }
 
+        sb.append(HtmlUtils.formTable());
         String id = request.getString("instrument_id");
         if (instruments.size() > 0) {
             sb.append(HtmlUtils.row(HtmlUtils.headerCols(new Object[] {
