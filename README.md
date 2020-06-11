@@ -19,13 +19,16 @@ This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins di
 As a convenience we make a release of the plugin in the <a href="lib">lib directory</a>. 
 
 
-# Installing
+# Configuration
 
-Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database, configure email settings and SMS settings.
+Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database, configure email settings, configure SMS settings. 
 
-# Configuring the RDX database
+These configuration options are set in the rdx.properties file (example <a href="blob/master/src/com/radiometrics/plugin/rdx.properties">here</a>. If not already done so copy this file to your RAMADDA server's
+<a href="https://geodesystems.com/repository/userguide/installing.html#home">home directory</a>.
 
-you will need to specify the JDBC URL for the external instrument status database. This takes the form of:
+## Configuring the RDX database
+
+You will need to specify the JDBC URL for the external instrument status database. This takes the form of:
 <pre>
 rdx.db.url=jdbc:&lt;database type&gt;:&lt;database path&gt;
 </pre>
@@ -35,7 +38,7 @@ e.g. for running with Derby use:
 rdx.db.url=jdbc:derby:/Users/jeffmc/.ramadda/derby/repository;create=true;
 </pre>
 
-# Configuring email settings
+## Configuring email settings
 To send email notifications when running in AWS EC2 you need to do a couple of things. 
 * Enable AWS SES. First,  you need to enable Amazon's <a href="https://docs.bitnami.com/aws/how-to/use-ses/">Simple Email Service</a> and verify your email addresses. 
 
@@ -45,7 +48,7 @@ To send email notifications when running in AWS EC2 you need to do a couple of t
 email-smtp.us-west-2.amazonaws.com
 </pre>
 
-In the external repository.properties file on your server you need to specify the smtp user and password from the AWS-SES configuration:
+In the external rdx.properties file on your server you need to specify the smtp user and password from the AWS-SES configuration:
 <pre>
 ramadda.admin.smtp.user=
 ramadda.admin.smtp.password=
@@ -53,14 +56,14 @@ ramadda.admin.smtp.starttls=true
 </pre>
 
 
-# Configuring text message settings
+## Configuring text message settings
 
 To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins. If you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it into the server's ramadda/plugins directory.
 
 
 The phone plugin uses <a href="https://www.twilio.com/">Twilio</a> as the message gateway. 
 You will need to create an account with Twilio and configure your RAMADDA server. 
-See <a href="https://geodesystems.com/repository/phone/configuration.html">here</a> for RAMADDA configuration information. The 2 main properties to set in ramadda/repository.properties are:
+The 2 main properties to set in your repository.properties are:
 <pre>
 #Twilio app id
 twilio.appid=
@@ -71,9 +74,9 @@ twilio.authtoken=
 
 
 # Repository contents
-The RDX plugin is in:
+The plugin is in: <a href=src/com/radiometrics/plugin>src/com/radiometrics/plugin</a>
 
-  src/com/radiometrics/plugin
+The contents are:
 
 * rdx.properties
 
