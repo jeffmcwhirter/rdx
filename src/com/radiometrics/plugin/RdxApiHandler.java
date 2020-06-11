@@ -60,16 +60,16 @@ import java.util.List;
  */
 public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
-    /** _more_          */
+    /** lists status. defined in api.xml */
     private static final String PATH_STATUS = "/rdx/status";
 
-    /** _more_          */
+    /** lists notifications. defined in api.xml */
     private static final String PATH_NOTIFICATIONS = "/rdx/notifications";
 
-    /** _more_          */
+    /** property id for running the monitor */
     private static final String PROP_RUN = "rdx.monitor.run";
 
-    /** _more_          */
+    /** afre we currently running the monitoring */
     private boolean monitorInstruments;
 
 
@@ -137,7 +137,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * Runs the notification checker
      */
     public void runCheckNotifications() {
         //Check every 15 minutes
@@ -161,23 +161,24 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @return db connection
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private Connection getRdxConnection() throws Exception {
         return getDatabaseManager().getExternalConnection("rdx", "db");
     }
 
     /**
-     * _more_
+     * Read the instruments from the external rdx db
      *
-     * @return _more_
+     * @return List of instruments
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private List<Instrument> readInstruments() throws Exception {
         Connection connection = getRdxConnection();
         if (connection == null) {
             log("Failed to get database connection");
+
             return null;
         }
         try {
@@ -205,13 +206,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * Get the pending notifications for the given entry or all if entry is null
      *
      *
-     * @param entry _more_
-     * @return _more_
+     * @param entry The entry. If null then get all notifications
+     * @return List of notifications
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private List<RdxNotifications> getNotifications(Entry entry)
             throws Exception {
@@ -237,7 +238,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /**
      * Run through the pending notifications
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private void checkNotifications() throws Exception {
         List<RdxNotifications> notifications = getNotifications(null);
@@ -315,16 +316,15 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * handle /test request
      *
-     * @param request _more_
+     * @param request the request
      *
-     * @return _more_
+     * @return the result
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public Result processTest(Request request) throws Exception {
-
         /*
         getDatabaseManager().update(
             InstrumentStatus.TABLE, InstrumentStatus.COLUMN_INSTRUMENT_ID,
@@ -332,19 +332,18 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             new String[] { InstrumentStatus.COLUMN_NETWORK_UP },
             new Object[] { new Integer(0) });
         */
-
         return processStatus(request);
     }
 
 
     /**
-     * _more_
+     * Add header to the /status or /notifications page
      *
-     * @param request _more_
-     * @param sb _more_
-     * @param path _more_
+     * @param request The request
+     * @param sb buffer to append to
+     * @param path PATH_STATUS or PATH_NOTIFICATIONS
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private void addHeader(Request request, Appendable sb, String path)
             throws Exception {
@@ -399,13 +398,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * Process the /notifications request
      *
-     * @param request _more_
+     * @param request the request
      *
-     * @return _more_
+     * @return Result
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public Result processNotifications(Request request) throws Exception {
         request.put("template", "radiometrics");
@@ -471,7 +470,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @return The result
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public Result processStatus(Request request) throws Exception {
         request.put("template", "radiometrics");
@@ -479,8 +478,11 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         addHeader(request, sb, PATH_STATUS);
         List<Instrument> instruments = readInstruments();
         if (instruments == null) {
-	    sb.append(getPageHandler().showDialogWarning("Failed to read instruments"));
-            return new Result("",sb);
+            sb.append(
+                getPageHandler().showDialogWarning(
+                    "Failed to read instruments"));
+
+            return new Result("", sb);
         }
 
         sb.append(HtmlUtils.formTable());
@@ -688,11 +690,11 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * Delete any notifications for the given entry
      *
-     * @param entry _more_
+     * @param entry The entry
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private void deleteNotification(Entry entry) throws Exception {
         getDatabaseManager().delete(RdxNotifications.DB_TABLE_NAME,
@@ -702,15 +704,15 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * Send the notification either sms or email
      *
-     * @param request _more_
-     * @param entry _more_
-     * @param instrumentId _more_
-     * @param type _more_
-     * @param msg _more_
+     * @param request the request
+     * @param entry the entry
+     * @param instrumentId the instrument
+     * @param type email or sms
+     * @param msg the message
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     private void sendNotification(Request request, Entry entry,
                                   String instrumentId, String type,
@@ -789,31 +791,31 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     public static class InstrumentStatus {
 
-        /** _more_ */
+        /** db table name */
         public static final String TABLE = "rdx_test_instrument_status";
 
-        /** _more_ */
+        /** db column name */
         public static final String COLUMN_INSTRUMENT_ID = "instrument_id";
 
-        /** _more_ */
+        /** db column name */
         public static final String COLUMN_TYPE = "type";
 
-        /** _more_ */
+        /** db column name */
         public static final String COLUMN_LAST_NETWORK = "last_network_time";
 
-        /** _more_ */
+        /** db column name */
         public static final String COLUMN_LAST_DATA = "last_data_time";
 
-        /** _more_ */
+        /** db column name */
         public static final String COLUMN_LAST_LDM = "last_ldm_time";
 
 
         /**
-         * _more_
+         * add example insruments from instruments.txt
          *
          *
-         * @param apiHandler _more_
-         * @throws Exception _more_
+         * @param apiHandler handler
+         * @throws Exception On badness
          */
         private static void addExampleInstruments(RdxApiHandler apiHandler)
                 throws Exception {
@@ -840,56 +842,36 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
     }
 
-    /**
-     * Class description
-     *
-     *
-     * @version        $version$, Sat, May 30, '20
-     * @author         Enter your name here...
-     */
-    public static class InstrumentStatusLog extends InstrumentStatus {
-
-        /** _more_ */
-        public static final String TABLE = "rdx_instrument_status_log";
-
-        /** _more_ */
-        public static final String COLUMN_DATE = "date";
-
-    }
-
 
 
 
     /**
-     * Class description
+     * Holds the instrument info from the external rdx db
      *
-     *
-     * @version        $version$, Sat, May 23, '20
-     * @author         Enter your name here...
+     * @author         Jeff McWhirter
      */
     private static class Instrument {
 
-        /** _more_ */
+        /** attribute */
         String id;
 
-
-        /** _more_ */
+        /** attribute */
         Date network;
 
-        /** _more_ */
+        /** attribute */
         Date data;
 
-        /** _more_ */
+        /** attribute */
         Date ldm;
 
 
         /**
-         * _more_
+         * ctor
          *
-         * @param api _more_
-         * @param results _more_
+         * @param api hadnler
+         * @param results db resulset
          *
-         * @throws Exception _more_
+         * @throws Exception On badness
          */
         public Instrument(RdxApiHandler api, ResultSet results)
                 throws Exception {
@@ -916,17 +898,17 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     public static class Notification {
 
-        /** _more_ */
+        /** const value */
         public static final int MINUTES_EMAIL = 60;
 
-        /** _more_ */
+        /** const value */
         public static final int MINUTES_TEXT = 60 * 11;
 
 
-        /** _more_ */
+        /** const value */
         public static final String TYPE_EMAIL = "email";
 
-        /** _more_ */
+        /** const value */
         public static final String TYPE_TEXT = "text";
 
 
