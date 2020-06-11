@@ -51,14 +51,14 @@ import java.util.List;
  *
  *
  * @version        $version$, Sat, May 30, '20
- * @author         Enter your name here...    
+ * @author         Enter your name here...
  */
 public class InstrumentLog {
 
     /** _more_ */
     public static final String TABLE = "rdx_instrument_status_log";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COLUMN_ENTRY_ID = "entry_id";
 
     /** _more_ */
@@ -68,37 +68,30 @@ public class InstrumentLog {
     public static final String COLUMN_INSTRUMENT_ID = "instrument_id";
 
     /** _more_ */
-    public static final String COLUMN_LAST_NETWORK_CONNECTION =
-        "last_network_connection";
+    public static final String COLUMN_LAST_NETWORK = "last_network_time";
 
     /** _more_ */
-    public static final String COLUMN_LAST_DATA = "last_data";
+    public static final String COLUMN_LAST_DATA = "last_data_time";
 
     /** _more_ */
-    public static final String COLUMN_NETWORK_UP = "network_up";
-
-    /** _more_ */
-    public static final String COLUMN_DATA_DOWN = "data_down";
+    public static final String COLUMN_LAST_LDM = "last_ldm_time";
 
 
 
     /** _more_ */
     Date date;
 
-    /** _more_          */
+    /** _more_ */
     String entryId;
 
     /** _more_ */
-    int dataDown;
+    Date lastNetwork;
 
     /** _more_ */
-    boolean networkIsUp;
+    Date lastData;
 
     /** _more_ */
-    Date lastNetworkConnection;
-
-    /** _more_ */
-    Date lastDataTime;
+    Date lastLdm;
 
     /**
      * _more_
@@ -113,40 +106,44 @@ public class InstrumentLog {
         entryId = results.getString(COLUMN_ENTRY_ID);
         date = repository.getDatabaseManager().getTimestamp(results,
                 COLUMN_DATE, true);
-        networkIsUp = 1 == results.getInt(COLUMN_NETWORK_UP);
-        dataDown    = results.getInt(COLUMN_DATA_DOWN);
-        lastNetworkConnection =
-            repository.getDatabaseManager().getTimestamp(results,
-                COLUMN_LAST_NETWORK_CONNECTION, true);
-        lastDataTime = repository.getDatabaseManager().getTimestamp(results,
+        lastNetwork = repository.getDatabaseManager().getTimestamp(results,
+                COLUMN_LAST_NETWORK, true);
+        lastData = repository.getDatabaseManager().getTimestamp(results,
                 COLUMN_LAST_DATA, true);
+        lastLdm = repository.getDatabaseManager().getTimestamp(results,
+                COLUMN_LAST_LDM, true);
 
     }
 
 
+    /** _more_ */
     private static String insert;
-    public static void store(Repository repository, Entry entry) throws Exception {
-	if(insert==null)
-	    insert = SqlUtil.makeInsert(TABLE,
-                                           new String[] {
-					    COLUMN_ENTRY_ID,
-					    COLUMN_DATE,
-					    COLUMN_INSTRUMENT_ID,
-					    COLUMN_LAST_NETWORK_CONNECTION,
-					    COLUMN_LAST_DATA,
-					    COLUMN_NETWORK_UP,
-					    COLUMN_DATA_DOWN
-					   });
 
-        repository.getDatabaseManager().executeInsert(insert,
-                                           new Object[] { entry.getId(),
-							  new Date(),
-							  entry.getValue(RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID),
-							  entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK_CONNECTION),
-							  entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_DATA),
-							  entry.getValue(RdxInstrumentTypeHandler.IDX_NETWORK_UP),
-							  entry.getValue(RdxInstrumentTypeHandler.IDX_DATA_DOWN)});
-							  
+    /**
+     * _more_
+     *
+     * @param repository _more_
+     * @param entry _more_
+     *
+     * @throws Exception _more_
+     */
+    public static void store(Repository repository, Entry entry)
+            throws Exception {
+        if (insert == null) {
+            insert = SqlUtil.makeInsert(TABLE, new String[] {
+                COLUMN_ENTRY_ID, COLUMN_DATE, COLUMN_INSTRUMENT_ID,
+                COLUMN_LAST_NETWORK, COLUMN_LAST_DATA, COLUMN_LAST_LDM,
+            });
+        }
+
+        repository.getDatabaseManager().executeInsert(insert, new Object[] {
+            entry.getId(), new Date(),
+            entry.getValue(RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID),
+            entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK),
+            entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_DATA),
+            entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM),
+        });
+
     }
 
 

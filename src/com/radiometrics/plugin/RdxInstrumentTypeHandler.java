@@ -17,15 +17,15 @@
 package com.radiometrics.plugin;
 
 
-import org.ramadda.repository.*;
-import org.ramadda.repository.type.*;
-import org.ramadda.data.services.PointTypeHandler;
-import org.ramadda.data.point.text.CsvFile;
 import org.ramadda.data.point.text.*;
+import org.ramadda.data.point.text.CsvFile;
 
 import org.ramadda.data.record.*;
-import java.io.*;
-import java.text.SimpleDateFormat;
+import org.ramadda.data.services.PointTypeHandler;
+
+
+import org.ramadda.repository.*;
+import org.ramadda.repository.type.*;
 
 import org.ramadda.util.HtmlUtils;
 
@@ -33,6 +33,10 @@ import org.ramadda.util.HtmlUtils;
 import org.w3c.dom.*;
 
 import ucar.unidata.util.StringUtil;
+
+import java.io.*;
+
+import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -44,46 +48,44 @@ import java.util.List;
  */
 public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
-    /** _more_          */
+    /** _more_ */
     private static int IDX = 0;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_INSTRUMENT_ID = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_IPADDRESS = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_COMPUTEROS = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_CONTACT_NAME = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_CONTACT_EMAIL = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_CITY = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_STATE = IDX++;
 
-    public static final int IDX_MONITORING_ENABLED= IDX++;    
+    /** _more_ */
+    public static final int IDX_MONITORING_ENABLED = IDX++;
 
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_LAST_MAINTENANCE = IDX++;
 
-    /** _more_          */
-    public static final int IDX_NETWORK_UP = IDX++;
+    /** _more_ */
+    public static final int IDX_LAST_NETWORK = IDX++;
 
-    /** _more_          */
-    public static final int IDX_DATA_DOWN = IDX++;
-
-    /** _more_          */
-    public static final int IDX_LAST_NETWORK_CONNECTION = IDX++;
-
-    /** _more_          */
+    /** _more_ */
     public static final int IDX_LAST_DATA = IDX++;
+
+    /** _more_ */
+    public static final int IDX_LAST_LDM = IDX++;
 
 
 
@@ -114,6 +116,11 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
         return false;
     }
 
+    /**
+     * _more_
+     *
+     * @return _more_
+     */
     @Override
     public boolean isGroup() {
         return true;
@@ -136,6 +143,13 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     }
 
 
+    /**
+     * Class description
+     *
+     *
+     * @version        $version$, Tue, Jun 9, '20
+     * @author         Enter your name here...
+     */
     public class RdxRecordFile extends CsvFile {
 
         /** _more_ */
@@ -152,7 +166,8 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
          *
          * @throws IOException _more_
          */
-        public RdxRecordFile(Request request, Entry entry) throws IOException {
+        public RdxRecordFile(Request request, Entry entry)
+                throws IOException {
             this.request = request;
             this.entry   = entry;
         }
@@ -191,10 +206,13 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
             makeFields(request);
             SimpleDateFormat sdf =
                 RepositoryUtil.makeDateFormat("yyyyMMdd'T'HHmmss");
-            StringBuilder s     = new StringBuilder("#converted stream\n");
-	    List<InstrumentLog> instrumentLogs = InstrumentLog.readInstrumentsLog(entry.getTypeHandler().getRepository(), entry);
+            StringBuilder s = new StringBuilder("#converted stream\n");
+            List<InstrumentLog> instrumentLogs =
+                InstrumentLog.readInstrumentsLog(
+                    entry.getTypeHandler().getRepository(), entry);
             ByteArrayInputStream bais =
                 new ByteArrayInputStream(s.toString().getBytes());
+
             return bais;
         }
 
@@ -206,13 +224,12 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
          * @throws Exception _more_
          */
         private void makeFields(Request request) throws Exception {
-            boolean      debug     = false;
+            boolean       debug  = false;
             StringBuilder fields = new StringBuilder();
-	    fields.append(
-			  makeField(
-				    "latitude", attrType(RecordField.TYPE_DOUBLE),
-				    attrLabel("Latitude")));
-	    fields.append(",");
+            fields.append(makeField("latitude",
+                                    attrType(RecordField.TYPE_DOUBLE),
+                                    attrLabel("Latitude")));
+            fields.append(",");
             putProperty(PROP_FIELDS, fields.toString());
         }
     }
@@ -240,6 +257,50 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     /**
      * _more_
      *
+     * @param entry _more_
+     * @param attr _more_
+     *
+     * @return _more_
+     */
+    @Override
+    public String getDisplayAttribute(Entry entry, String attr) {
+        if (attr.equals("mapFillColor")) {
+            Date d = (Date) entry.getValue(IDX_LAST_DATA);
+            if (d == null) {
+                return null;
+            }
+
+            return getColor(d);
+        }
+
+        return super.getDisplayAttribute(entry, attr);
+    }
+
+    /**
+     * _more_
+     *
+     * @param d _more_
+     *
+     * @return _more_
+     */
+    private String getColor(Date d) {
+        int minutes = (int) ((new Date().getTime() - d.getTime()) / 1000
+                             / 60);
+        if (minutes <= 15) {
+            return "green";
+        } else if (minutes <= 60) {
+            return "yellow";
+        } else if (minutes <= 720) {
+            return "red";
+        } else {
+            return "purple";
+        }
+    }
+
+
+    /**
+     * _more_
+     *
      * @param request _more_
      * @param entry _more_
      * @param column _more_
@@ -247,17 +308,25 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
      *
      * @return _more_
      */
+    @Override
     public String decorateValue(Request request, Entry entry, Column column,
                                 String s) {
-        if ( !column.getName().equals("data_down")) {
-            return super.decorateValue(request, entry, column, s);
-        }
-        Date d = (Date) entry.getValue(IDX_LAST_DATA);
-        if (d == null) {
-            return super.decorateValue(request, entry, column, s);
+        if (column.getName().equals("last_network")
+                || column.getName().equals("last_data")
+                || column.getName().equals("last_ldm")) {
+            Date d = (Date) entry.getValue(column.getOffset());
+            int minutes = (int) ((new Date().getTime() - d.getTime()) / 1000
+                                 / 60);
+            if (d != null) {
+                String color = getColor(d);
+
+                return HtmlUtils.span(
+                    "&nbsp;" + s + " (" + minutes + " minutes ago)&nbsp;",
+                    HtmlUtils.style("background:" + color + ";"));
+            }
         }
 
-        return s;
+        return super.decorateValue(request, entry, column, s);
     }
 
 
