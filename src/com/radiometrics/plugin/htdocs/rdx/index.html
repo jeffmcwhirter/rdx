@@ -36,6 +36,9 @@ A brief summary of the Radiometrics instrument monitoring facility -
   </ul>
 
   <li> View and edit access can be controlled to certain users. More information <a href="https://geodesystems.com/repository/userguide/access.html">here</a>.
+
+  <li> A single entry or a tree of entries (e.g., a collection) can be exported (through the entry's menu Export link). This is a self-contained zip file that can then be imported under a different entry or into a different RAMADDA repository. For example, one can create an instrument collection on a development RAMADDA then import that collection into a production RAMADDA.
+
 </ul>
 
 
@@ -66,11 +69,12 @@ From the above pages you can also turn off/on the instrument monitoring and noti
 A number of standard views of instrument information have been provided, e.g. - tables, bar charts, maps, etc. 
 However, it is easy to create new views with RAMADDA's wiki facility. The best way to do this is to copy (using the
 <img src=${root}/icons/entrymenu.png width=24> copy link) one of the existing extra wiki pages. Once copied go 
-its edit page to view and change the wiki text. The wiki facility is fully documented
+to its edit page to view and change the wiki text. The wiki facility is fully documented
 <a href="https://geodesystems.com/repository/userguide/page_ramaddawikifacilities.html">here</a>.
 
-
-
+The standard view for collection and instrument entries is defined within the rdxtype.xml file
+contained in the source release and distributed within the rdxplugin.jar. This standard view can
+be changed in the plugin.
 
 
 </div>

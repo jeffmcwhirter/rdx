@@ -1,44 +1,58 @@
 <types  supercategory="Science and Education">
+<!--
+This file contains the specification for the RDX collection and instrument entry types.
 
+-->
+
+<!-- 
+type definition for instrument collections
+the metadata attribute defines the metadata type (from metadata.xml) that is listed in the New property section of 
+a collection entry
+-->
   <type name="rdx_collection"  description="RDX Collection" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" category="RDX"   metadata="rdx_notification" >
+
+<!-- define the icon -->
      <property name="icon" value="/rdx/radiometrics_icon.png"/>
+
+<!-- 
+define the default wiki page display 
+The :rem are comments (ala DOS comments)
+-->
      <wiki><![CDATA[
 +section title={{name}}
+:rem Show the reload facility
 :reload seconds=30 showCheckbox=true showLabel=true
+:rem Include the entry description and treat it as wiki text
 {{description wikify=true}}
 :rem These properties say to use the children of this group as data
 {{property name=doEntries value=true}}
 {{property name=addAttributes value=true}} 
-:rem Define properties that all displays use
-:rem The convert data adds a derived quantity
-{{group filterFields=network_up,data_down hideFilterWidget=true sortFields=name
-convertData="derived(field=minutes_since, function=Math.round(Utils.toMinutes(new Date().getTime()-last_data)));" 
+:rem Define properties that all displays use. The convert data adds a derived quantity
+{{group filterFields=network_minutes,data_minutes,ldm_minutes hideFilterWidget=true sortFields=name
+colors=green,yellow,red,purple
+colorBySteps=15,60,720
+convertData="
+derived(field=network_minutes, function=Utils.minutesSince(last_network));
+derived(field=data_minutes, function=Utils.minutesSince(last_data));
+derived(field=ldm_minutes, function=Utils.minutesSince(last_ldm));
+" 
 }} 
 :rem This is used to show the filter widgets. The changes get applied to all displays
 {{display_blank hideFilterWidget=false showMenu=true}}
-{{display_table  height="300"  showMenu=true
-linkField=entry_url iconField=icon  
-fields="name,instrument_id,typeName,city,state,network_up,data_down,minutes_since"
-data_down.colorTable=plotly_reds
-minutes_since.colorTable=plotly_reds
-network_up.colorByMap="true:green,false:red"
-colorCells="network_up,data_down,minutes_since"
+{{display_table  height="300"  linkField=entry_url iconField=icon  
+fields="name,instrument_id,typeName,now,last_network,network_minutes,data_minutes,ldm_minutes"
+colorCells="network_minutes,data_minutes,ldm_minutes"
 }} 
-{{display_barchart fields=data_down,minutes_since indexField=name forceStrings=true chartRight=80}}
+{{display_barchart fields=network_minutes,data_minutes,ldm_minutes
+indexField=instrument_id forceStrings=true chartRight=80}}
 {{display_map  width="100%"  height="400" iconField=icon iconSize=16
 linkField=entry_url titleField=name descriptionField=description
 doGridPoints=true  boundsScale=0.15
 showPoints=true
 radius="12"  strokeColor=transparent
-colorBy=testnumber
-colorBySteps=15,60,720
+colorBy=data_minutes colorByFields=network_minutes,data_minutes,ldm_minutes 
 colorTableShowRange=false
 colorTableLabels="0-15 minutes,15-60 minutes,1-12 hours,>12 hours"
-colors=green,yellow,red,purple
-xglyph1="type:label,pos:sw,label:data_colon_ ${data_down}_nl_minutes_colon_ ${minutes_since},dy:0,dx:5"
-xglyph3="type:axis,pos:sw,dx:15,dy:10,height:35,width:40"
-xglyph4="type:3dbar,pos:sw,dx:20,dy:10,height:30,width:8,baseHeight:5,sizeBy:testnumber"
-xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:minutes_since,color:red"
 }}
 -section
 ]]>
@@ -46,16 +60,29 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
 </type>
 
 
-
+<!-- Base type for all instruments -->
   <type name="rdx_instrument"  description="RDX Instrument" handler="com.radiometrics.plugin.RdxInstrumentTypeHandler" category="RDX" foruser="false">
-     <property name="icon" value="/rdx/system-monitor.png"/>
+
+<!-- basic display configuration -->
      <property name="form.date.show" value="false"/>
+
+<!-- georeference is a single point instead of an area -->
      <property name="form.area.show" value="false"/>
      <property name="form.location.show" value="true"/>
-     <property name="form.resource.show" value="false"/>
-     <property name="form.datatype.show" value="false"/>
+
+<!-- Show single altitude value -->
      <property name="form.altitude.show" value="true"/>
      <property name="form.altitude.top.show" value="false"/>
+
+<!-- no file or url to show -->
+     <property name="form.resource.show" value="false"/>
+
+     <property name="form.datatype.show" value="false"/>
+
+<!-- 
+metadata
+note: If these are changed then also change the IDX_ attributes in RdxInstrumentTypeHandler.java
+-->
      <column name="instrument_id" type="string"  label="ID"   cansearch="true"  />
      <column name="contact_name" type="string"  label="Contact"   />
      <column name="contact_email" type="email"  label="Contact Email"   />
@@ -64,15 +91,22 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
      <column name="computer_os" type="enumerationplus"  label="Computer OS"   />
      <column name="last_maintenance" type="datetime"  label="Last Maintenance Time"   />
      <column name="monitoring_enabled" type="boolean"  label="Monitoring Enabled" default="true"  />
+
      <column name="last_network" type="datetime"  label="Last Network Connection"   />
      <column name="last_data" type="datetime"  label="Last Data Time"   />
      <column name="last_ldm" type="datetime"  label="Last LDM Time"   />
+
+<!-- map bubble -->
      <bubble><![CDATA[
 :heading {{name link=true}}
 {{information details=true}}
 ]]>
 </bubble>
-     <wiki><![CDATA[
+
+<!-- 
+default wiki page display 
+-->
+ <wiki><![CDATA[
 +section title="Instrument: {{name}}"
 {{description wikify=true}}
 +row
@@ -88,19 +122,23 @@ xglyph5="type:3dbar,pos:sw,dx:35,dy:10,height:30,width:8,baseHeight:5,sizeBy:min
 </wiki>
  </type>
 
- <type name="rdx_instrument_radiometer"  super="rdx_instrument"
-  description="RDX Radiometer" xhandler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+
+<!--
+These are the definitions of the specific instrument types. 
+They inherit from rdx_instrument
+Right now they only define an icon but they could have further column definitions, wiki display, etc
+-->
+ <type name="rdx_instrument_radiometer"  super="rdx_instrument"  description="RDX Radiometer" >
      <property name="icon" value="/rdx/radiometer.gif"/>
  </type>
 
- <type name="rdx_instrument_windprofiler"  super="rdx_instrument" description="RDX Wind Profiler" xhandler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+ <type name="rdx_instrument_windprofiler"  super="rdx_instrument" description="RDX Wind Profiler">
      <property name="icon" value="/rdx/windprofiler.png"/>
  </type>
  
- <type name="rdx_instrument_sodar"  super="rdx_instrument" description="RDX Sodar" xhandler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" >
+ <type name="rdx_instrument_sodar"  super="rdx_instrument" description="RDX Sodar" >
      <property name="icon" value="/rdx/sodar.png"/>
  </type>
-
 
 
 </types>

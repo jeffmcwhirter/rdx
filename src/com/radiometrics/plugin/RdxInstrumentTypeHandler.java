@@ -19,28 +19,17 @@ package com.radiometrics.plugin;
 
 import org.ramadda.data.point.text.*;
 import org.ramadda.data.point.text.CsvFile;
-
 import org.ramadda.data.record.*;
 import org.ramadda.data.services.PointTypeHandler;
-
-
 import org.ramadda.repository.*;
 import org.ramadda.repository.type.*;
-
 import org.ramadda.util.HtmlUtils;
-
-
 import org.w3c.dom.*;
-
 import ucar.unidata.util.StringUtil;
-
 import java.io.*;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Date;
 import java.util.List;
-
 
 /**
  *
@@ -48,43 +37,43 @@ import java.util.List;
  */
 public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
-    /** _more_ */
+    /** indices correspond to the column definitions in rdxtypes.xml */
     private static int IDX = 0;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_INSTRUMENT_ID = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_IPADDRESS = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_COMPUTEROS = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_CONTACT_NAME = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_CONTACT_EMAIL = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_CITY = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_STATE = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_MONITORING_ENABLED = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_LAST_MAINTENANCE = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_LAST_NETWORK = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_LAST_DATA = IDX++;
 
-    /** _more_ */
+    /** index */
     public static final int IDX_LAST_LDM = IDX++;
 
 
