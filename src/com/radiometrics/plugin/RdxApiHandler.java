@@ -356,12 +356,11 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         for (int i = 1; i <= 16; i++) {
             Date now = new Date();
             Date network = new Date(now.getTime()
-                                    - (long) (Math.random() * 120 * 60
-                                        * 1000));
+                                    - (long) ((Math.random() *60) * 60000));
             Date data = new Date(now.getTime()
-                                 - (long) (Math.random() * 120 * 60 * 1000));
+                                 - (long) ((Math.random() * 120) * 60000));
             Date ldm = new Date(now.getTime()
-                                - (long) (Math.random() * 120 * 60 * 1000));
+                                - (long) ((650+Math.random() * 140) * 60000));
             getDatabaseManager().update(
                 InstrumentData.TABLE, InstrumentData.COLUMN_INSTRUMENT_ID,
                 new Integer(i),

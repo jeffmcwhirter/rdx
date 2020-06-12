@@ -28,29 +28,29 @@ The :rem are comments (ala DOS comments)
 {{property name=doEntries value=true}}
 {{property name=addAttributes value=true}} 
 :rem Define properties that all displays use. The convert data adds a derived quantity
-{{group filterFields=network_minutes,data_minutes,ldm_minutes hideFilterWidget=true sortFields=name
+{{group filterFields=network,data,ldm hideFilterWidget=true sortFields=name
 colors=green,yellow,red,purple
 colorBySteps=15,60,720
 convertData="
-derived(field=network_minutes, function=Utils.minutesSince(last_network));
-derived(field=data_minutes, function=Utils.minutesSince(last_data));
-derived(field=ldm_minutes, function=Utils.minutesSince(last_ldm));
+derived(field=network, function=Utils.minutesSince(last_network));
+derived(field=data, function=Utils.minutesSince(last_data));
+derived(field=ldm, function=Utils.minutesSince(last_ldm));
 " 
 }} 
 :rem This is used to show the filter widgets. The changes get applied to all displays
 {{display_blank hideFilterWidget=false showMenu=true}}
 {{display_table  height="300"  linkField=entry_url iconField=icon  
-fields="name,instrument_id,typeName,now,last_network,network_minutes,data_minutes,ldm_minutes"
-colorCells="network_minutes,data_minutes,ldm_minutes"
+fields="name,instrument_id,type,network,data,ldm"
+colorCells="network,data,ldm"
 }} 
-{{display_barchart fields=network_minutes,data_minutes,ldm_minutes
+{{display_barchart fields=network,data,ldm
 indexField=instrument_id forceStrings=true chartRight=80}}
 {{display_map  width="100%"  height="400" iconField=icon iconSize=16
 linkField=entry_url titleField=name descriptionField=description
 doGridPoints=true  boundsScale=0.15
 showPoints=true
 radius="12"  strokeColor=transparent
-colorBy=data_minutes colorByFields=network_minutes,data_minutes,ldm_minutes 
+colorBy=data colorByFields=network,data,ldm 
 colorTableShowRange=false
 colorTableLabels="0-15 minutes,15-60 minutes,1-12 hours,>12 hours"
 }}
