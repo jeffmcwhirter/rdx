@@ -5,13 +5,15 @@ The Radiometrics RAMADDA  National Mesonet Program Monitor  is contained within 
  
 This plugin runs under RAMADDA. 
 To install RAMADDA on an AWS EC2 instance see <a href="https://geodesystems.com/repository/a/release#awsinstall">https://geodesystems.com/repository/a/release#awsinstall</a>.
-You can also run RAMADDA in other environments including on your laptop. More information
+You can also run RAMADDA in other environments including on your laptop. More information is provided 
 <a href="https://geodesystems.com/repository/userguide/installing.html">here</a>.
 
 Once RAMADDA is installed copy the rdxplugin.jar to the RAMADDA plugin directory at:
 <pre>&lt;RAMADDA home&gt;/plugins<pre>
 and restart the RAMADDA server.
 
+The initial instrument collection and associated content is provided as a RAMADDA export file. This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
+<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) choose a folder to hold the content then from the folder's popup menu button (<img src="https://geodesystems.com/repository/icons/entrymenu.png">) select Import and upload the rdxexport.zip file.
 
 # Building the plugin
 Building the  plugin relies on the RAMADDA source tree to be installed as a sibling of this  directory. Get the RAMADDA source with:
