@@ -10,8 +10,12 @@ You can also run RAMADDA in other environments including on your laptop. More in
 
 Once RAMADDA is installed copy the <a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxplugin.jar">rdxplugin.jar</a> to the RAMADDA plugin directory on your server at:
 <pre>&lt;RAMADDA home&gt;/plugins</pre>
-and restart the RAMADDA server.
+e.g., on AWS this would be:
+<pre>/mnt/ramadda/repository/plugins</pre>
 
+Then restart the RAMADDA server.
+
+# Initial instrument content
 The initial instrument collection and associated content is provided as a RAMADDA export file. This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
 <a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) select Import and upload the rdxexport.zip file.
 
