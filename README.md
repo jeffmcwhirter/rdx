@@ -13,24 +13,14 @@ Once RAMADDA is installed copy the <a href="https://github.com/jeffmcwhirter/rdx
 e.g., on AWS this would be:
 <pre>/mnt/ramadda/repository/plugins</pre>
 
-Then restart the RAMADDA server.
+Then restart the RAMADDA server. e.g.:
+<pre>sudo service ramadda start</pre>
+
+
 
 # Initial instrument content
 The initial instrument collection and associated content is provided as a RAMADDA export file. This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
 <a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) select Import and upload the rdxexport.zip file.
-
-# Building the plugin
-Building the  plugin relies on the RAMADDA source tree to be installed as a sibling of this  directory. Get the RAMADDA source with:
-<pre>
-git clone https://github.com/geodesystems/ramadda.git
-</pre>
-
-To build the plugin you need to have Java Ant installed (as well as Java JDK8+). Just run ant from the top-level directory.
-<pre>
-ant
-</pre>
-
-This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins directory. To release it to an external server you'll need to copy the plugin to the server's ramadda/plugins directory and restart the repository.
 
 
 # Configuration
@@ -90,6 +80,21 @@ twilio.appid=
 #Twili authorization token (for reading the transcription)
 twilio.authtoken=
 </pre>
+
+
+# Building the plugin
+Building the  plugin relies on the RAMADDA source tree to be installed as a sibling of this  directory. Get the RAMADDA source with:
+<pre>
+git clone https://github.com/geodesystems/ramadda.git
+</pre>
+
+To build the plugin you need to have Java Ant installed (as well as Java JDK8+). Just run ant from the top-level directory.
+<pre>
+ant
+</pre>
+
+This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins directory. To release it to an external server you'll need to copy the plugin to the server's ramadda/plugins directory and restart the repository.
+
 
 
 # Plugin contents
