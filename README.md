@@ -13,7 +13,7 @@ Once RAMADDA is installed copy the <a href="https://github.com/jeffmcwhirter/rdx
 and restart the RAMADDA server.
 
 The initial instrument collection and associated content is provided as a RAMADDA export file. This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
-<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) choose a folder to hold the content then from the folder's popup menu button (<img src="https://geodesystems.com/repository/icons/entrymenu.png">) select Import and upload the rdxexport.zip file.
+<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) select Import and upload the rdxexport.zip file.
 
 # Building the plugin
 Building the  plugin relies on the RAMADDA source tree to be installed as a sibling of this  directory. Get the RAMADDA source with:
@@ -42,12 +42,16 @@ If not already done so copy this file to your RAMADDA server's
 You will need to specify the JDBC URL for the external instrument status database. This takes the form of:
 <pre>
 rdx.db.url=jdbc:&lt;database type&gt;:&lt;database path&gt;
+rdx.db.user=&lt;database user&gt;
+rdx.db.password=&lt;database password&gt;
 </pre>
 
-e.g. for running with Derby use:
+
+e.g. for running with Postgres use:
 <pre>
-rdx.db.url=jdbc:derby:/Users/jeffmc/.ramadda/derby/repository;create=true;
+rdx.db.url=jdbc:postgresql://localhost/repository?UseServerSidePrepare=1&Protocol=-1
 </pre>
+
 
 ## Configuring email settings
 To send email notifications when running in AWS EC2 you need to do a couple of things. 
