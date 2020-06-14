@@ -8,8 +8,10 @@ To install RAMADDA on an AWS EC2 instance see <a href="https://geodesystems.com/
 You can also run RAMADDA in other environments including on your laptop. More information is provided 
 <a href="https://geodesystems.com/repository/userguide/installing.html">here</a>.
 
-Once RAMADDA is installed copy the rdxplugin.jar to the RAMADDA plugin directory at:
-<pre>&lt;RAMADDA home&gt;/plugins<pre>
+Once RAMADDA is installed copy the <a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxplugin.jar">rdxplugin.jar</a> to the RAMADDA plugin directory on your server at:
+<pre>
+&lt;RAMADDA home&gt;/plugins
+<pre>
 and restart the RAMADDA server.
 
 The initial instrument collection and associated content is provided as a RAMADDA export file. This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
