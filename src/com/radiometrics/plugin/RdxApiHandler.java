@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 
 /**
@@ -52,33 +53,61 @@ import java.util.List;
  * creates a singleton of this class. It starts 2 threads - one to monitor the external RDX
  * instrument status database and one to monitor the internal notifications table.
  *
- * The property (settable in the repository.properties file) rdx.monitor.run controls
- * running the monitor process
- *
- * The property (settable in the repository.properties file) rdx.monitor.interval defines the
- * interval (seconds) between checks of the external database.
+ * See the top level /rdx/rdx.properties file for setting configuration options
  */
 public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
-    /** lists status. defined in api.xml */
+    /** lists instrument db. defined in api.xml */
     private static final String PATH_STATUS = "/rdx/status";
 
     /** lists notifications. defined in api.xml */
     private static final String PATH_NOTIFICATIONS = "/rdx/notifications";
 
-    /** property id for running the monitor */
+
+    /** randomly changes instruments. defined in api.xml */
+    private static final String PATH_CHANGEINSTRUMENTS =
+        "/rdx/changeinstruments";
+
+
+    /** property id */
+    private static final String PROP_TEST = "rdx.test";
+
+
+    /** property id */
     private static final String PROP_RUN = "rdx.monitor.run";
 
-    /** afre we currently running the monitoring */
+    /** property id */
+    private static final String PROP_TIMEZONE = "rdx.timezone";
+
+
+    /** property id */
+    private static final String PROP_THRESHOLD = "rdx.threshold";
+
+    /** property id */
+    private static final String PROP_THRESHOLD_NETWORK =
+        "rdx.threshold.network";
+
+    /** property id */
+    private static final String PROP_THRESHOLD_DATA = "rdx.threshold.data";
+
+    /** property id */
+    private static final String PROP_THRESHOLD_LDM = "rdx.threshold.ldm";
+
+    /** property id */
+    private static final String PROP_INSTRUMENT_INTERVAL =
+        "rdx.instrument.interval";
+
+
+    /** are we currently running the monitoring */
     private boolean monitorInstruments;
 
-    /** _more_          */
+    /** threshold in minutes for notifications of network times*/
     private int networkThreshold;
 
-    /** _more_          */
+    /** threshold in minutes for notifications of data times */
     private int dataThreshold;
 
-    /** _more_          */
+    /** threshold in minutes for notifications of ldm times*/
     private int ldmThreshold;
 
 
@@ -91,14 +120,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     public RdxApiHandler(Repository repository) throws Exception {
         super(repository);
-
-        //Set the noticiation thresholds
-        int threshold = getRepository().getProperty("rdx.threshold", 30);
+        //Set the notification thresholds
+        int threshold = getRepository().getProperty(PROP_THRESHOLD, 30);
         networkThreshold =
-            getRepository().getProperty("rdx.threshold.network", threshold);
-        dataThreshold = getRepository().getProperty("rdx.threshold.data",
+            getRepository().getProperty(PROP_THRESHOLD_NETWORK, threshold);
+        dataThreshold = getRepository().getProperty(PROP_THRESHOLD_DATA,
                 threshold);
-        ldmThreshold = getRepository().getProperty("rdx.threshold.ldm",
+        ldmThreshold = getRepository().getProperty(PROP_THRESHOLD_LDM,
                 threshold);
 
         //Are we monitoring instruments
@@ -106,8 +134,12 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
         //Start running in 10 seconds to give the full repository time to start up
         int delayToStart = 10;
+
         //Change the test db
-        processChangeInstruments(null);
+        if (getTestMode()) {
+            processChangeInstruments(null);
+        }
+
         Misc.run(new Runnable() {
             public void run() {
                 Misc.sleepSeconds(delayToStart);
@@ -127,6 +159,16 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
+     * Are we running in test mode
+     *
+     * @return running in test mode
+     */
+    public boolean getTestMode() {
+        return getRepository().getProperty(PROP_TEST, false);
+    }
+
+
+    /**
      * Utility to log messages and errors
      *
      * @param msg The message
@@ -141,7 +183,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * Check the instrument status
      */
     public void runCheckInstruments() {
-        int pause = getRepository().getProperty("rdx.monitor.interval", 60);
+        int pause = getRepository().getProperty(PROP_INSTRUMENT_INTERVAL, 60);
         //TODO: how many errors until we stop?
         while (true) {
             try {
@@ -178,15 +220,41 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
 
+
+
     /**
-     * Get the db connection to the instrument status database
+     * Get the db connection to the instrument status database.
+     * If we are running in test mode then use RAMADDA's internal DB
+     * connection.
      *
      * @return db connection
      *
      * @throws Exception On badness
      */
     private Connection getRdxConnection() throws Exception {
+        if (getTestMode()) {
+            return getDatabaseManager().getConnection();
+        }
+
         return getDatabaseManager().getExternalConnection("rdx", "db");
+    }
+
+    /**
+     * Close the connection to the RDX db
+     *
+     * @param connection The connection to close
+     *
+     * @throws Exception On badness
+     */
+    private void closeRdxConnection(Connection connection) throws Exception {
+        if (connection == null) {
+            return;
+        }
+        if (getTestMode()) {
+            getDatabaseManager().closeConnection(connection);
+        } else {
+            connection.close();
+        }
     }
 
     /**
@@ -227,7 +295,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
             return instruments;
         } finally {
-            connection.close();
+            closeRdxConnection(connection);
         }
     }
 
@@ -291,7 +359,6 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
                 continue;
             }
 
-
             //Check the time
             long minutesDiff = (now.getTime()
                                 - notification.getDate().getTime()) / 1000
@@ -344,7 +411,8 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * handle /test request
+     * handle /changeinstruments request. This is used in test mode to radnomly change the network/ldm/data times
+     * of the test InstrumentData table
      *
      * @param request the request
      *
@@ -353,14 +421,19 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * @throws Exception On badness
      */
     public Result processChangeInstruments(Request request) throws Exception {
+        if ( !getTestMode()) {
+            throw new IllegalArgumentException(
+                "Trying to change instruments while in test mode");
+        }
         for (int i = 1; i <= 16; i++) {
             Date now = new Date();
             Date network = new Date(now.getTime()
-                                    - (long) ((Math.random() *60) * 60000));
+                                    - (long) ((Math.random() * 60) * 60000));
             Date data = new Date(now.getTime()
                                  - (long) ((Math.random() * 120) * 60000));
             Date ldm = new Date(now.getTime()
-                                - (long) ((650+Math.random() * 140) * 60000));
+                                - (long) ((650 + Math.random() * 140)
+                                          * 60000));
             getDatabaseManager().update(
                 InstrumentData.TABLE, InstrumentData.COLUMN_INSTRUMENT_ID,
                 new Integer(i),
@@ -416,16 +489,16 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
         if (request.isAdmin()) {
             String link =
-                HtmlUtils.href(getRepository().getUrlBase() + path + "?"
-                               + PROP_RUN + "="
-                               + ( !monitorInstruments), monitorInstruments
+                HtmlUtils.button(HtmlUtils.href(getRepository().getUrlBase()
+                    + path + "?" + PROP_RUN + "="
+                    + ( !monitorInstruments), monitorInstruments
                     ? "Turn off monitoring"
-                    : "Turn on monitoring");
-            if ( !monitorInstruments) {
-                sb.append("Not currently monitoring instruments");
-                sb.append(HtmlUtils.space(2));
-            }
+                    : "Turn on monitoring"));
             sb.append(link);
+            if ( !monitorInstruments) {
+                sb.append(HtmlUtils.space(2));
+                sb.append("Not currently monitoring instruments");
+            }
             sb.append("<br>");
         } else {
             if ( !monitorInstruments) {
@@ -451,9 +524,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     public Result processNotifications(Request request) throws Exception {
         request.put("template", "radiometrics");
         StringBuilder sb = new StringBuilder();
-
         addHeader(request, sb, PATH_NOTIFICATIONS);
-
         if (request.defined("delete")) {
             Entry entry = getEntryManager().getEntry(null,
                               request.getString("delete"));
@@ -518,14 +589,27 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         request.put("template", "radiometrics");
         StringBuilder sb = new StringBuilder();
         addHeader(request, sb, PATH_STATUS);
+        boolean test = getTestMode();
+        if (test) {
+            String link =
+                HtmlUtils.href(
+                    getRepository().getUrlBase() + PATH_CHANGEINSTRUMENTS,
+                    "Change instrument timestamps");
+            sb.append(
+                getPageHandler().showDialogNote(
+                    "Running in test mode. " + link));
+        }
         List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
-            sb.append(
-                getPageHandler().showDialogWarning(
-                    "Failed to read instruments"));
+            if ( !test) {
+                sb.append(
+                    getPageHandler().showDialogWarning(
+                        "Failed to read instruments<br>Perhaps the external instrument database is not configured?"));
+            }
 
             return new Result("", sb);
         }
+
 
         sb.append(HtmlUtils.formTable());
         String id = request.getString("instrument_id");
@@ -614,13 +698,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
     /**
-     * _more_
+     * Utility to get the elapsed minutes
      *
-     * @param date _more_
+     * @param date date
      *
-     * @return _more_
+     * @return Elapsed minutes
      */
-    private int getMinutes(Date date) {
+    private int getElapsedMinutes(Date date) {
         if (date == null) {
             return 0;
         }
@@ -638,13 +722,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * @throws Exception On badness
      */
     private boolean isInstrumentOk(Entry entry) throws Exception {
-        int network = getMinutes(
+        int network = getElapsedMinutes(
                           (Date) entry.getValue(
                               RdxInstrumentTypeHandler.IDX_LAST_NETWORK));
-        int data = getMinutes(
+        int data = getElapsedMinutes(
                        (Date) entry.getValue(
                            RdxInstrumentTypeHandler.IDX_LAST_DATA));
-        int ldm = getMinutes(
+        int ldm = getElapsedMinutes(
                       (Date) entry.getValue(
                           RdxInstrumentTypeHandler.IDX_LAST_LDM));
 
@@ -712,7 +796,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         }
 
         if (store || changed) {
-            System.err.println("\tStoring instrument log");
+            //            System.err.println("\tStoring instrument log");
             InstrumentLog.store(repository, entry);
         }
 
@@ -779,7 +863,11 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
                                   String instrumentId, String type,
                                   String msg)
             throws Exception {
-        GregorianCalendar cal = new GregorianCalendar();
+
+        TimeZone tz =
+            TimeZone.getTimeZone(getRepository().getProperty(PROP_TIMEZONE,
+                "America/Denver"));
+        GregorianCalendar cal = new GregorianCalendar(tz);
         cal.setTime(new Date());
         boolean weekend = (cal.get(cal.DAY_OF_WEEK) == cal.SUNDAY)
                           || (cal.get(cal.DAY_OF_WEEK) == cal.SATURDAY);
@@ -844,9 +932,9 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /**
      *  Hard code the rdx db type id to the ramadda type
      *
-     * @param rdxType _more_
+     * @param rdxType RDX DB instrument type
      *
-     * @return _more_
+     * @return RAMADDA type from rdxtypes.xml
      */
     public static String getRamaddaType(int rdxType) {
         if (rdxType == 1) {
@@ -878,7 +966,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         /** db table name */
         public static final String TABLE = "rdx_test_instrument_data";
 
-        /** _more_ */
+        /** Other table to join with */
         public static final String TABLE2 = "rdx_test_instrument_metadata";
 
         /** db column name */
@@ -902,7 +990,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         /** db column name */
         public static final String COLUMN_LAST_LDM = TABLE + ".last_ldm_time";
 
-        /** _more_ */
+        /** Column selections */
         public static final String WHAT = SqlUtil.comma(COLUMN_SITE_ID,
                                               COLUMN_TYPE_ID,
                                               COLUMN_INSTRUMENT_ID,
@@ -910,22 +998,22 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
                                               COLUMN_LAST_DATA,
                                               COLUMN_LAST_LDM);
 
-        /** _more_ */
+        /** instrument attribute */
         String siteId;
 
-        /** _more_ */
+        /** instrument attribute */
         String typeId;
 
-        /** attribute */
+        /** instrument attribute */
         int id;
 
-        /** attribute */
+        /** instrument attribute */
         Date network;
 
-        /** attribute */
+        /** instrument attribute */
         Date data;
 
-        /** attribute */
+        /** instrument attribute */
         Date ldm;
 
 
@@ -965,7 +1053,6 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
         /** const value */
         public static final int MINUTES_TEXT = 60 * 11;
-
 
         /** const value */
         public static final String TYPE_EMAIL = "email";
