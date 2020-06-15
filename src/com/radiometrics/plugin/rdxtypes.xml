@@ -61,7 +61,8 @@ colorTableLabels="0-15 minutes,15-60 minutes,1-12 hours,>12 hours"
 
 
 <!-- Base type for all instruments -->
-  <type name="rdx_instrument"  description="RDX Instrument" handler="com.radiometrics.plugin.RdxInstrumentTypeHandler" category="RDX" foruser="false">
+<type name="rdx_instrument"  description="RDX Instrument" handler="com.radiometrics.plugin.RdxInstrumentTypeHandler" category="RDX"
+      foruser="false" canCache="false">
 
 <!-- basic display configuration -->
      <property name="form.date.show" value="false"/>

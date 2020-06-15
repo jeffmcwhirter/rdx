@@ -105,7 +105,7 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
      * @return _more_
      */
     @Override
-    public boolean canCache(Entry entry) {
+    public boolean getCanCache(Entry entry) {
         return false;
     }
 

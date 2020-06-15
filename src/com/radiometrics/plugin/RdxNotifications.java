@@ -19,7 +19,7 @@
 package com.radiometrics.plugin;
 
 
-import org.ramadda.util.sql.SqlUtil;
+import org.ramadda.util.sql.*;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,74 +35,56 @@ import java.util.Date;
  * Class description
  *
  *
- * @version        $version$, Wed, Jun 10, '20
- * @author         Enter your name here...
+ * @version        $version$, Sun, Jun 14, '20
+ * @author         Enter your name here...    
  */
-public class RdxNotifications {
+public class RdxNotifications extends DbObject {
 
-    /** _more_ */
+    /** _more_          */
     public static final String DB_TABLE_NAME = "rdx_notifications";
 
-    /** _more_ */
+    /** _more_          */
     public static final String COL_ENTRY_ID = DB_TABLE_NAME + ".entry_id";
 
-    /** _more_ */
+    /** _more_          */
     public static final String COL_NODOT_ENTRY_ID = "entry_id";
 
-    /** _more_ */
+    /** _more_          */
     public static final String COL_EVENT_TYPE = DB_TABLE_NAME + ".event_type";
 
-    /** _more_ */
+    /** _more_          */
     public static final String COL_NODOT_EVENT_TYPE = "event_type";
 
-    /** _more_ */
+    /** _more_          */
     public static final String COL_DATE = DB_TABLE_NAME + ".date";
 
-    /** _more_ */
+    /** _more_          */
     public static final String COL_NODOT_DATE = "date";
 
-    /** _more_ */
-    public static final String COL_TESTINT = DB_TABLE_NAME + ".testint";
-
-    /** _more_ */
-    public static final String COL_NODOT_TESTINT = "testint";
-
-    /** _more_ */
-    public static final String COL_TESTDOUBLE = DB_TABLE_NAME + ".testdouble";
-
-    /** _more_ */
-    public static final String COL_NODOT_TESTDOUBLE = "testdouble";
-
-    /** _more_ */
+    /** _more_          */
     public static final String[] ARRAY = new String[] { COL_ENTRY_ID,
-            COL_EVENT_TYPE, COL_DATE, COL_TESTINT, COL_TESTDOUBLE };
+            COL_EVENT_TYPE, COL_DATE };
 
-    /** _more_ */
+    /** _more_          */
     public static final String COLUMNS = SqlUtil.comma(ARRAY);
 
-    /** _more_ */
+    /** _more_          */
     public static final String NODOT_COLUMNS = SqlUtil.commaNoDot(ARRAY);
 
-    /** _more_ */
+    /** _more_          */
     public static final String INSERT =
         SqlUtil.makeInsert(DB_TABLE_NAME, NODOT_COLUMNS,
                            SqlUtil.getQuestionMarks(ARRAY.length));
 
 
-    /** _more_ */
+    /** _more_          */
     private String entry_id;
 
-    /** _more_ */
+    /** _more_          */
     private String event_type;
 
-    /** _more_ */
+    /** _more_          */
     private Date date;
-
-    /** _more_ */
-    private int testint;
-
-    /** _more_ */
-    private double testdouble;
 
 
     /**
@@ -115,12 +97,7 @@ public class RdxNotifications {
     public RdxNotifications(ResultSet results) throws Exception {
         entry_id   = results.getString(COL_NODOT_ENTRY_ID);
         event_type = results.getString(COL_NODOT_EVENT_TYPE);
-        Timestamp date_ts = results.getTimestamp(COL_NODOT_DATE);
-        if (date_ts != null) {
-            date = new Date(date_ts.getTime());
-        }
-        testint    = results.getInt(COL_NODOT_TESTINT);
-        testdouble = results.getDouble(COL_NODOT_TESTDOUBLE);
+        date       = getDate(results, COL_NODOT_DATE);
     }
 
     /**
@@ -175,42 +152,6 @@ public class RdxNotifications {
      */
     public void setDate(Date v) {
         date = v;
-    }
-
-    /**
-     * _more_
-     *
-     * @return _more_
-     */
-    public int getTestint() {
-        return testint;
-    }
-
-    /**
-     * _more_
-     *
-     * @param v _more_
-     */
-    public void setTestint(int v) {
-        testint = v;
-    }
-
-    /**
-     * _more_
-     *
-     * @return _more_
-     */
-    public double getTestdouble() {
-        return testdouble;
-    }
-
-    /**
-     * _more_
-     *
-     * @param v _more_
-     */
-    public void setTestdouble(double v) {
-        testdouble = v;
     }
 
 
