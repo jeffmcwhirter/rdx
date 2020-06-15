@@ -39,12 +39,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
-import java.text.SimpleDateFormat;
 
 
 /**
@@ -80,7 +81,8 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /** property id */
     private static final String PROP_TIMEZONE = "rdx.timezone";
 
-    private static final String PROP_DATEFORMAT = "rdx.dateformat";    
+    /** _more_          */
+    private static final String PROP_DATEFORMAT = "rdx.dateformat";
 
 
     /** property id */
@@ -104,17 +106,19 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /** are we currently running the monitoring */
     private boolean monitorInstruments;
 
-    /** threshold in minutes for notifications of network times*/
+    /** threshold in minutes for notifications of network times */
     private int networkThreshold;
 
     /** threshold in minutes for notifications of data times */
     private int dataThreshold;
 
-    /** threshold in minutes for notifications of ldm times*/
+    /** threshold in minutes for notifications of ldm times */
     private int ldmThreshold;
 
+    /** _more_          */
     private TimeZone timeZone;
 
+    /** _more_          */
     private SimpleDateFormat sdf;
 
     /**
@@ -126,12 +130,14 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      */
     public RdxApiHandler(Repository repository) throws Exception {
         super(repository);
-	timeZone =
+        timeZone =
             TimeZone.getTimeZone(getRepository().getProperty(PROP_TIMEZONE,
-							     "America/Denver"));
+                "America/Denver"));
 
-	sdf = new SimpleDateFormat(getRepository().getProperty(PROP_DATEFORMAT,"yyyy-MM-dd HH:mm z"));
-	sdf.setTimeZone(timeZone);
+        sdf = new SimpleDateFormat(
+            getRepository().getProperty(
+                PROP_DATEFORMAT, "yyyy-MM-dd HH:mm z"));
+        sdf.setTimeZone(timeZone);
 
         //Set the notification thresholds
         int threshold = getRepository().getProperty(PROP_THRESHOLD, 30);
@@ -166,14 +172,24 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             }
         });
 
-	//	getDatabaseManager().generateBeans("com.radiometrics.plugin",
-	//					   "(rdx_notifications|xxx_rdx_instrument_status_log|xxx_rdx_test_instrument_status)");
+        //      getDatabaseManager().generateBeans("com.radiometrics.plugin",
+        //                                         "(rdx_notifications|xxx_rdx_instrument_status_log|xxx_rdx_test_instrument_status)");
     }
 
 
+    /**
+     * _more_
+     *
+     * @param d _more_
+     *
+     * @return _more_
+     */
     private String formatDate(Date d) {
-	if(d==null) return "--";
-	return sdf.format(d);
+        if (d == null) {
+            return "--";
+        }
+
+        return sdf.format(d);
     }
 
     /**
@@ -443,19 +459,25 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             throw new IllegalArgumentException(
                 "Trying to change instruments while in test mode");
         }
-	boolean randomize = request==null?true:request.get("randomize",true);
-	Date now = new Date();
-	long minutesToMillis = 60000;
+        boolean randomize       = (request == null)
+                                  ? true
+                                  : request.get("randomize", true);
+        Date    now             = new Date();
+        long    minutesToMillis = 60000;
         for (int i = 1; i <= 16; i++) {
             Date network = new Date(now.getTime()
-                                    - (long) ((Math.random() * 60) * minutesToMillis));
+                                    - (long) ((Math.random() * 60)
+                                        * minutesToMillis));
             Date data = new Date(now.getTime()
-                                 - (long) ((Math.random() * 120) * minutesToMillis));
+                                 - (long) ((Math.random() * 120)
+                                           * minutesToMillis));
             Date ldm = new Date(now.getTime()
                                 - (long) ((650 + Math.random() * 140)
                                           * minutesToMillis));
-	    if(!randomize)
-		network = data = ldm = new Date(now.getTime()-5*minutesToMillis);
+            if ( !randomize) {
+                network = data = ldm = new Date(now.getTime()
+                        - 5 * minutesToMillis);
+            }
             getDatabaseManager().update(
                 InstrumentData.TABLE, InstrumentData.COLUMN_INSTRUMENT_ID,
                 new Integer(i),
@@ -469,7 +491,8 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             return null;
         }
 
-	checkInstruments(false);
+        checkInstruments(false);
+
         return processStatus(request);
     }
 
@@ -521,7 +544,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             if ( !monitorInstruments) {
                 sb.append(HtmlUtils.space(2));
             }
-            sb.append("<br>");
+            sb.append("<p>");
         } else {
             if ( !monitorInstruments) {
                 sb.append("Not currently monitoring instruments");
@@ -547,14 +570,15 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         request.put("template", "radiometrics");
         StringBuilder sb = new StringBuilder();
         addHeader(request, sb, PATH_NOTIFICATIONS);
-        if (request.get("deleteall",false)) {
-	    deleteNotification(null);
-	    sb.append(
-		      getRepository().getPageHandler().showDialogNote(
-								      "All notifications deleted"));
-	    sb.append(HtmlUtils.sectionClose());
-	    return new Result("", sb);
-	}
+        if (request.get("deleteall", false)) {
+            deleteNotification(null);
+            sb.append(
+                getRepository().getPageHandler().showDialogNote(
+                    "All notifications deleted"));
+            sb.append(HtmlUtils.sectionClose());
+
+            return new Result("", sb);
+        }
 
         if (request.defined("delete")) {
             Entry entry = getEntryManager().getEntry(null,
@@ -574,38 +598,40 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
                     "No pending notifications"));
         }
 
-
-        sb.append(HtmlUtils.formTable());
         if (notifications.size() > 0) {
-            String deleteAllLink = HtmlUtils.href(
-                                    getRepository().getUrlBase()
-                                    + "/rdx/notifications?deleteall=true", HtmlUtils.getIconImage(
-                                        "fa-trash", "title",
-                                        "Delete all notifications"));
+            sb.append(
+                "<table class='stripe ramadda-table' table-ordering=true>");
+            String deleteAllLink =
+                HtmlUtils
+                    .href(getRepository().getUrlBase()
+                          + "/rdx/notifications?deleteall=true", HtmlUtils
+                              .getIconImage("fa-trash", "title",
+                                            "Delete all notifications"));
 
-            sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] {
-			    deleteAllLink,
-			    HtmlUtils.b("Instrument"),
-			    HtmlUtils.b("Type"), HtmlUtils.b("Date") })));
-        }
-        for (RdxNotifications notification : notifications) {
-            Entry entry = getEntryManager().getEntry(null,
-                              notification.getEntryId());
-            if (entry == null) {
-                continue;
+            HtmlUtils.thead(sb, deleteAllLink, HtmlUtils.b("Instrument"),
+                            HtmlUtils.b("Type"), HtmlUtils.b("Date"));
+            sb.append("<tbody>");
+            for (RdxNotifications notification : notifications) {
+                Entry entry = getEntryManager().getEntry(null,
+                                  notification.getEntryId());
+                if (entry == null) {
+                    continue;
+                }
+                String url = getEntryManager().getEntryUrl(null, entry);
+                String deleteLink =
+                    HtmlUtils.href(
+                        getRepository().getUrlBase()
+                        + "/rdx/notifications?delete="
+                        + entry.getId(), HtmlUtils.getIconImage(
+                            "fa-trash", "title", "Delete notification"));
+                sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] {
+                    deleteLink + " ",
+                    HtmlUtils.href(url, entry.getName()),
+                    notification.getEventType(),
+                    formatDate(notification.getDate()) })));
             }
-            String url = getEntryManager().getEntryUrl(null, entry);
-            String deleteLink = HtmlUtils.href(
-                                    getRepository().getUrlBase()
-                                    + "/rdx/notifications?delete="
-                                    + entry.getId(), HtmlUtils.getIconImage(
-                                        "fa-trash", "title",
-                                        "Delete notification"));
-            sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] {deleteLink+" ",
-								 HtmlUtils.href(url, entry.getName()),
-								 notification.getEventType(), formatDate(notification.getDate()) })));
+            sb.append("</tbody></table>");
         }
-        sb.append(HtmlUtils.formTableClose());
         sb.append(HtmlUtils.sectionClose());
 
         return new Result("", sb);
@@ -628,16 +654,20 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         addHeader(request, sb, PATH_STATUS);
         boolean test = getTestMode();
         if (test) {
-            String link =HtmlUtils.button(HtmlUtils.href(
-							 getRepository().getUrlBase() + PATH_CHANGEINSTRUMENTS+"?randomize=true",
-							 "Randomize timestamps")) +
-		HtmlUtils.space(2) +
-		HtmlUtils.button(HtmlUtils.href(getRepository().getUrlBase() + PATH_CHANGEINSTRUMENTS+"?randomize=false",
-						"Update timestamps"));
-	    
+            String link = HtmlUtils.button(
+                              HtmlUtils.href(
+                                  getRepository().getUrlBase()
+                                  + PATH_CHANGEINSTRUMENTS
+                                  + "?randomize=true", "Randomize timestamps")) + HtmlUtils.space(
+                                      2) + HtmlUtils.button(
+                                      HtmlUtils.href(
+                                          getRepository().getUrlBase()
+                                          + PATH_CHANGEINSTRUMENTS
+                                          + "?randomize=false", "Update timestamps"));
+
             sb.append(
                 getPageHandler().showDialogNote(
-						"Running in test mode. " + HtmlUtils.space(2) +link));
+                    "Running in test mode. " + HtmlUtils.space(2) + link));
         }
         List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
@@ -651,31 +681,31 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         }
 
 
-        sb.append(HtmlUtils.formTable());
         String id = request.getString("instrument_id");
         if (instruments.size() > 0) {
-            sb.append(HtmlUtils.row(HtmlUtils.headerCols(new Object[] {
-                "Site ID",
-                "Instrument ID", "Last Network Connection", "Last Data",
-                "Last LDM" })));
-        }
-        for (InstrumentData instrument : instruments) {
-            Entry entry = getInstrumentEntry(instrument);
-            //TODO
-            String label = instrument.siteId;
-            if (entry != null) {
-                label = HtmlUtils.href(getEntryManager().getEntryUrl(null,
-                        entry), label);
+            sb.append(
+                "<table class='stripe ramadda-table' table-ordering=true>");
+            HtmlUtils.thead(sb, "Site ID", "Instrument ID",
+                            "Last Network Connection", "Last Data",
+                            "Last LDM");
+            sb.append("<tbody>");
+            for (InstrumentData instrument : instruments) {
+                Entry entry = getInstrumentEntry(instrument);
+                //TODO
+                String label = instrument.siteId;
+                if (entry != null) {
+                    label =
+                        HtmlUtils.href(getEntryManager().getEntryUrl(null,
+                            entry), label);
+                }
+
+                sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] { label,
+                        instrument.id, formatDate(instrument.network),
+                        formatDate(instrument.data),
+                        formatDate(instrument.ldm) })));
             }
-
-
-            sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] { label,
-								  instrument.id, formatDate(instrument.network),
-								  formatDate(instrument.data),
-								  formatDate(instrument.ldm) })));
-        }
-        sb.append(HtmlUtils.formTableClose());
-        if (instruments.size() == 0) {
+            sb.append("<tbody></table>");
+        } else {
             sb.append("No instruments found");
         }
         sb.append(HtmlUtils.sectionClose());
@@ -689,6 +719,8 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /**
      * Check the instruments
      *
+     *
+     * @param doNotification _more_
      * @throws Exception on badness
      */
     private void checkInstruments(boolean doNotification) throws Exception {
@@ -784,16 +816,19 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @param instrument The instrument
      * @param store Force storing the instrument state
+     * @param doNotification _more_
      *
      * @throws Exception On badness
      */
-    private void checkInstrument(InstrumentData instrument, boolean store, boolean doNotification)
+    private void checkInstrument(InstrumentData instrument, boolean store,
+                                 boolean doNotification)
             throws Exception {
         //Find the station entries
         Entry entry = getInstrumentEntry(instrument);
         if (entry == null) {
             log("checkInstrument: Could not find instrument: "
                 + instrument.siteId);
+
             return;
         }
 
@@ -835,7 +870,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
 
 
-        if (doNotification &&(store || changed)) {
+        if (doNotification && (store || changed)) {
             //            System.err.println("\tStoring instrument log");
             InstrumentLog.store(repository, entry);
         }
@@ -847,13 +882,16 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
 
         //Save the ramadda entry
         getEntryManager().updateEntry(getRepository().getTmpRequest(), entry);
-	if(!doNotification) return;
+        if ( !doNotification) {
+            return;
+        }
 
         boolean ok = isInstrumentOk(entry);
-	//        System.err.println("checkInstrument:" + entry + " changed:" + changed +" ok:" + ok +" network:"    + instrument.network);
+        //        System.err.println("checkInstrument:" + entry + " changed:" + changed +" ok:" + ok +" network:"    + instrument.network);
         if (ok) {
             //If all OK then remove any pending notification and return
             deleteNotification(entry);
+
             return;
         }
 
@@ -866,10 +904,10 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
                                        RdxNotifications.COL_NODOT_ENTRY_ID,
                                        RdxNotifications.COL_NODOT_EVENT_TYPE,
                                        RdxNotifications.COL_NODOT_DATE });
-	    Date dttm = new Date();
+            Date dttm = new Date();
             getDatabaseManager().executeInsert(insert,
                     new Object[] { entry.getId(),
-                                   Notification.TYPE_EMAIL, dttm});
+                                   Notification.TYPE_EMAIL, dttm });
         }
 
     }
@@ -883,12 +921,13 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * @throws Exception On badness
      */
     private void deleteNotification(Entry entry) throws Exception {
-	if(entry==null)
-	    getDatabaseManager().delete(RdxNotifications.DB_TABLE_NAME, null);
-	else
-	    getDatabaseManager().delete(RdxNotifications.DB_TABLE_NAME,
-					Clause.eq(RdxNotifications.COL_ENTRY_ID,
-						  entry.getId()));
+        if (entry == null) {
+            getDatabaseManager().delete(RdxNotifications.DB_TABLE_NAME, null);
+        } else {
+            getDatabaseManager().delete(
+                RdxNotifications.DB_TABLE_NAME,
+                Clause.eq(RdxNotifications.COL_ENTRY_ID, entry.getId()));
+        }
     }
 
 
