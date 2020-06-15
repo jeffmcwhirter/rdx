@@ -81,7 +81,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /** property id */
     private static final String PROP_TIMEZONE = "rdx.timezone";
 
-    /** _more_          */
+    /** _more_ */
     private static final String PROP_DATEFORMAT = "rdx.dateformat";
 
 
@@ -115,10 +115,10 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
     /** threshold in minutes for notifications of ldm times */
     private int ldmThreshold;
 
-    /** _more_          */
+    /** _more_ */
     private TimeZone timeZone;
 
-    /** _more_          */
+    /** _more_ */
     private SimpleDateFormat sdf;
 
     /**
@@ -217,7 +217,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      * Check the instrument status
      */
     public void runCheckInstruments() {
-        int pause = getRepository().getProperty(PROP_INSTRUMENT_INTERVAL, 60);
+        int pause = getRepository().getProperty(PROP_INSTRUMENT_INTERVAL, 10);
         //TODO: how many errors until we stop?
         while (true) {
             try {
@@ -734,6 +734,7 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
             store = (now.getTime() - timeSinceLastInstrumentStore.getTime())
                     / 1000 / 60 >= 60;
         }
+
         for (InstrumentData instrument : instruments) {
             checkInstrument(instrument, store, doNotification);
         }
@@ -777,12 +778,24 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
      *
      * @return Elapsed minutes
      */
-    private int getElapsedMinutes(Date date) {
+    public static int getElapsedMinutes(Date date) {
+        return getElapsedMinutes(new Date(), date);
+    }
+
+    /**
+     * _more_
+     *
+     * @param now _more_
+     * @param date _more_
+     *
+     * @return _more_
+     */
+    public static int getElapsedMinutes(Date now, Date date) {
         if (date == null) {
             return 0;
         }
 
-        return (int) (new Date().getTime() - date.getTime()) / 1000 / 60;
+        return (int) (now.getTime() - date.getTime()) / 1000 / 60;
     }
 
     /**
@@ -869,6 +882,9 @@ public class RdxApiHandler extends RepositoryManager implements RequestHandler {
         }
 
 
+
+        //TEST
+        store = true;
 
         if (doNotification && (store || changed)) {
             //            System.err.println("\tStoring instrument log");

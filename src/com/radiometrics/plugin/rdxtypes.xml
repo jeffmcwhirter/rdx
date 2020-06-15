@@ -61,7 +61,7 @@ colorTableLabels="0-15 minutes,15-60 minutes,1-12 hours,>12 hours"
 
 
 <!-- Base type for all instruments -->
-<type name="rdx_instrument"  description="RDX Instrument" handler="com.radiometrics.plugin.RdxInstrumentTypeHandler" category="RDX"
+<type name="rdx_instrument"  super="type_point" description="RDX Instrument" handler="com.radiometrics.plugin.RdxInstrumentTypeHandler" category="RDX"
       foruser="false" canCache="false">
 
 <!-- basic display configuration -->
@@ -118,6 +118,11 @@ default wiki page display
 {{mapentry}}
 -col
 -row
+----
+{{group vAxisMinValue=0}}
+{{display_linechart fields=last_network_minutes missingDataMessage="" height="100"}}
+{{display_linechart fields=last_data_minutes missingDataMessage="" height="100"}}
+{{display_linechart fields=last_ldm_minutes missingDataMessage="" height="100"}}
 -section
 ]]>
 </wiki>

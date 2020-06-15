@@ -10,14 +10,14 @@ CREATE TABLE rdx_notifications (entry_id varchar(200),
 
 
 -- The time series of instrument status
-DROP TABLE rdx_instrument_status_log;
+--DROP TABLE rdx_instrument_status_log;
 CREATE TABLE rdx_instrument_status_log (
        entry_id varchar(200),
        date ramadda.datetime,
        instrument_id varchar(200),
-       last_network_time ramadda.datetime,
-       last_data_time ramadda.datetime,
-       last_ldm_time ramadda.datetime
+       elapsed_network_minutes int,
+       elapsed_data_minutes int,
+       elapsed_ldm_minutes int
 );
 
 

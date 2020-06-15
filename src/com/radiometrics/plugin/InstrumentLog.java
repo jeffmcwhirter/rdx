@@ -59,39 +59,46 @@ public class InstrumentLog {
     public static final String TABLE = "rdx_instrument_status_log";
 
     /** _more_ */
-    public static final String COLUMN_ENTRY_ID = "entry_id";
+    public static final String COL_ENTRY_ID = "entry_id";
 
     /** _more_ */
-    public static final String COLUMN_DATE = "date";
+    public static final String COL_DATE = "date";
 
     /** _more_ */
-    public static final String COLUMN_INSTRUMENT_ID = "instrument_id";
+    public static final String COL_INSTRUMENT_ID = "instrument_id";
 
     /** _more_ */
-    public static final String COLUMN_LAST_NETWORK = "last_network_time";
+    public static final String COL_ELAPSED_NETWORK_MINUTES =
+        "elapsed_network_minutes";
 
     /** _more_ */
-    public static final String COLUMN_LAST_DATA = "last_data_time";
+    public static final String COL_ELAPSED_DATA_MINUTES =
+        "elapsed_data_minutes";
 
     /** _more_ */
-    public static final String COLUMN_LAST_LDM = "last_ldm_time";
-
-
+    public static final String COL_ELAPSED_LDM_MINUTES =
+        "elapsed_ldm_minutes";
 
     /** _more_ */
-    Date date;
+    private static String insert;
+
+
+
 
     /** _more_ */
     String entryId;
 
-    /** _more_ */
-    Date lastNetwork;
+    /** _more_          */
+    Date date;
 
     /** _more_ */
-    Date lastData;
+    int elapsedNetwork;
 
     /** _more_ */
-    Date lastLdm;
+    int elapsedData;
+
+    /** _more_ */
+    int elapsedLdm;
 
     /**
      * _more_
@@ -103,21 +110,52 @@ public class InstrumentLog {
      */
     public InstrumentLog(Repository repository, ResultSet results)
             throws Exception {
-        entryId = results.getString(COLUMN_ENTRY_ID);
+        entryId = results.getString(COL_ENTRY_ID);
         date = repository.getDatabaseManager().getTimestamp(results,
-                COLUMN_DATE, true);
-        lastNetwork = repository.getDatabaseManager().getTimestamp(results,
-                COLUMN_LAST_NETWORK, true);
-        lastData = repository.getDatabaseManager().getTimestamp(results,
-                COLUMN_LAST_DATA, true);
-        lastLdm = repository.getDatabaseManager().getTimestamp(results,
-                COLUMN_LAST_LDM, true);
-
+                COL_DATE, true);
+        elapsedNetwork = results.getInt(COL_ELAPSED_NETWORK_MINUTES);
+        elapsedData    = results.getInt(COL_ELAPSED_DATA_MINUTES);
+        elapsedLdm     = results.getInt(COL_ELAPSED_LDM_MINUTES);
     }
 
 
-    /** _more_ */
-    private static String insert;
+
+    /**
+     * _more_
+     *
+     * @return _more_
+     */
+    public Date getDate() {
+        return date;
+    }
+
+    /**
+     * _more_
+     *
+     * @return _more_
+     */
+    public int getElapsedNetwork() {
+        return elapsedNetwork;
+    }
+
+    /**
+     * _more_
+     *
+     * @return _more_
+     */
+    public int getElapsedData() {
+        return elapsedData;
+    }
+
+    /**
+     * _more_
+     *
+     * @return _more_
+     */
+    public int getElapsedLdm() {
+        return elapsedLdm;
+    }
+
 
     /**
      * _more_
@@ -131,17 +169,27 @@ public class InstrumentLog {
             throws Exception {
         if (insert == null) {
             insert = SqlUtil.makeInsert(TABLE, new String[] {
-                COLUMN_ENTRY_ID, COLUMN_DATE, COLUMN_INSTRUMENT_ID,
-                COLUMN_LAST_NETWORK, COLUMN_LAST_DATA, COLUMN_LAST_LDM,
+                COL_ENTRY_ID, COL_DATE, COL_INSTRUMENT_ID,
+                COL_ELAPSED_NETWORK_MINUTES, COL_ELAPSED_DATA_MINUTES,
+                COL_ELAPSED_LDM_MINUTES,
             });
         }
 
+        Date now = new Date();
         repository.getDatabaseManager().executeInsert(insert, new Object[] {
-            entry.getId(), new Date(),
+            entry.getId(), now,
             entry.getValue(RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID),
-            entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK),
-            entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_DATA),
-            entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM),
+            RdxApiHandler.getElapsedMinutes(
+                now,
+                (Date) entry.getValue(
+                    RdxInstrumentTypeHandler.IDX_LAST_NETWORK)),
+            RdxApiHandler.getElapsedMinutes(
+                now,
+                (Date) entry.getValue(
+                    RdxInstrumentTypeHandler.IDX_LAST_DATA)),
+            RdxApiHandler.getElapsedMinutes(
+                now,
+                (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM)),
         });
 
     }
@@ -163,9 +211,10 @@ public class InstrumentLog {
         Connection connection =
             repository.getDatabaseManager().getConnection();
         List<InstrumentLog> instruments = new ArrayList<InstrumentLog>();
-        Statement stmt = SqlUtil.select(connection, "*", Misc.newList(TABLE),
-                                        Clause.eq(COLUMN_ENTRY_ID,
-                                            entry.getId()), "", 100);
+        Statement stmt =
+            SqlUtil.select(connection, "*", Misc.newList(TABLE),
+                           Clause.eq(COL_ENTRY_ID, entry.getId()),
+                           SqlUtil.orderBy(COL_DATE, true), 5000);
         try {
             SqlUtil.Iterator iter = new SqlUtil.Iterator(stmt);
             ResultSet        results;

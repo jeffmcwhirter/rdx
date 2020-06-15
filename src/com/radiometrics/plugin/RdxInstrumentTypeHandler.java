@@ -44,7 +44,7 @@ import java.util.List;
 public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
     /** indices correspond to the column definitions in rdxtypes.xml */
-    private static int IDX = 0;
+    private static int IDX = PointTypeHandler.IDX_LAST + 1;
 
     /** index */
     public static final int IDX_INSTRUMENT_ID = IDX++;
@@ -200,9 +200,26 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
             SimpleDateFormat sdf =
                 RepositoryUtil.makeDateFormat("yyyyMMdd'T'HHmmss");
             StringBuilder s = new StringBuilder("#converted stream\n");
-            List<InstrumentLog> instrumentLogs =
+            List<InstrumentLog> logs =
                 InstrumentLog.readInstrumentsLog(
                     entry.getTypeHandler().getRepository(), entry);
+
+            long now = new Date().getTime();
+            for (int i = logs.size() - 1; i >= 0; i--) {
+                InstrumentLog log = logs.get(i);
+                s.append(sdf.format(log.getDate()));
+                s.append(",");
+                s.append(entry.getLatitude());
+                s.append(",");
+                s.append(entry.getLongitude());
+                s.append(",");
+                s.append(log.getElapsedNetwork());
+                s.append(",");
+                s.append(log.getElapsedData());
+                s.append(",");
+                s.append(log.getElapsedLdm());
+                s.append("\n");
+            }
             ByteArrayInputStream bais =
                 new ByteArrayInputStream(s.toString().getBytes());
 
@@ -217,12 +234,31 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
          * @throws Exception _more_
          */
         private void makeFields(Request request) throws Exception {
-            boolean       debug  = false;
             StringBuilder fields = new StringBuilder();
+            fields.append(makeField("date", attrType(RecordField.TYPE_DATE),
+                                    attrLabel("Date"),
+                                    attrFormat("yyyyMMdd'T'HHmmss")));
+            fields.append(",");
             fields.append(makeField("latitude",
                                     attrType(RecordField.TYPE_DOUBLE),
                                     attrLabel("Latitude")));
             fields.append(",");
+            fields.append(makeField("longitude",
+                                    attrType(RecordField.TYPE_DOUBLE),
+                                    attrLabel("Longitude")));
+            fields.append(",");
+            fields.append(makeField("last_network_minutes",
+                                    attrType(RecordField.TYPE_DOUBLE),
+                                    attrLabel("Last Network Minutes")));
+            fields.append(",");
+            fields.append(makeField("last_data_minutes",
+                                    attrType(RecordField.TYPE_DOUBLE),
+                                    attrLabel("Last Data Minutes")));
+            fields.append(",");
+            fields.append(makeField("last_ldm_minutes",
+                                    attrType(RecordField.TYPE_DOUBLE),
+                                    attrLabel("Last LDM Minutes")));
+
             putProperty(PROP_FIELDS, fields.toString());
         }
     }

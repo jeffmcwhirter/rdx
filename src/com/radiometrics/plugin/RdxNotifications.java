@@ -36,54 +36,54 @@ import java.util.Date;
  *
  *
  * @version        $version$, Sun, Jun 14, '20
- * @author         Enter your name here...    
+ * @author         Enter your name here...
  */
 public class RdxNotifications extends DbObject {
 
-    /** _more_          */
+    /** _more_ */
     public static final String DB_TABLE_NAME = "rdx_notifications";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_ENTRY_ID = DB_TABLE_NAME + ".entry_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_ENTRY_ID = "entry_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_EVENT_TYPE = DB_TABLE_NAME + ".event_type";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_EVENT_TYPE = "event_type";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_DATE = DB_TABLE_NAME + ".date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_DATE = "date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String[] ARRAY = new String[] { COL_ENTRY_ID,
             COL_EVENT_TYPE, COL_DATE };
 
-    /** _more_          */
+    /** _more_ */
     public static final String COLUMNS = SqlUtil.comma(ARRAY);
 
-    /** _more_          */
+    /** _more_ */
     public static final String NODOT_COLUMNS = SqlUtil.commaNoDot(ARRAY);
 
-    /** _more_          */
+    /** _more_ */
     public static final String INSERT =
         SqlUtil.makeInsert(DB_TABLE_NAME, NODOT_COLUMNS,
                            SqlUtil.getQuestionMarks(ARRAY.length));
 
 
-    /** _more_          */
+    /** _more_ */
     private String entry_id;
 
-    /** _more_          */
+    /** _more_ */
     private String event_type;
 
-    /** _more_          */
+    /** _more_ */
     private Date date;
 
 
