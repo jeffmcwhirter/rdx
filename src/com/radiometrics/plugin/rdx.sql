@@ -14,7 +14,7 @@ CREATE TABLE rdx_notifications (entry_id varchar(200),
 
 
 -- The time series of instrument status
---DROP TABLE rdx_instrument_status_log;
+DROP TABLE rdx_instrument_status_log;
 CREATE TABLE rdx_instrument_status_log (
        entry_id varchar(200),
        date ramadda.datetime,
@@ -24,6 +24,8 @@ CREATE TABLE rdx_instrument_status_log (
        elapsed_ldm_minutes int
 );
 
+CREATE INDEX rdx_instrument_status_log_entry_index ON rdx_instrument_status_log (entry_id);
+
 
 DROP TABLE rdx_test_instrument_type;
 CREATE TABLE rdx_test_instrument_type (
@@ -31,7 +33,7 @@ CREATE TABLE rdx_test_instrument_type (
        instrument_name varchar(200)
 );
 
-insert into rdx_test_instrument_type (type_id, instrument_name)
+INSERT INTO rdx_test_instrument_type (type_id, instrument_name)
 values  (1,'Radiometer'),
 (2,'Wind Profiler'),
 (3,'Sodar');
@@ -45,7 +47,7 @@ CREATE TABLE rdx_test_instrument_metadata (
 );
 
 
-insert into rdx_test_instrument_metadata (site_id, instrument_id, type_id)
+INSERT INTO rdx_test_instrument_metadata (site_id, instrument_id, type_id)
 values ('ALBNM',1,2),
 ('BLTMD',2,2),
 ('BLDRM',3,1),
@@ -72,7 +74,7 @@ CREATE TABLE rdx_test_instrument_data (
        last_ldm_time ramadda.datetime
 );
 
-insert into rdx_test_instrument_data (instrument_id, last_network_time,last_data_time, last_ldm_time) 
+INSERT INTO rdx_test_instrument_data (instrument_id, last_network_time,last_data_time, last_ldm_time) 
 values 
 (1,'2020-05-30 11:03:00','2020-05-30 11:03:00','2020-05-30 11:03:00'),
 (2,'2020-05-30 11:03:00','2020-05-30 11:03:00','2020-05-30 11:03:00'),

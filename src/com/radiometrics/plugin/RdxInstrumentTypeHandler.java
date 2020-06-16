@@ -328,6 +328,7 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
                                  / 60);
             if (d != null) {
                 String color = RdxApiHandler.getColor(d);
+
                 return HtmlUtils.span(
                     "&nbsp;" + s + " (" + minutes + " minutes ago)&nbsp;",
                     HtmlUtils.style("background:" + color + ";"));
