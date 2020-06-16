@@ -299,32 +299,12 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
                 return null;
             }
 
-            return getColor(d);
+            return RdxApiHandler.getColor(d);
         }
 
         return super.getDisplayAttribute(entry, attr);
     }
 
-    /**
-     * _more_
-     *
-     * @param d _more_
-     *
-     * @return _more_
-     */
-    private String getColor(Date d) {
-        int minutes = (int) ((new Date().getTime() - d.getTime()) / 1000
-                             / 60);
-        if (minutes <= 15) {
-            return "green";
-        } else if (minutes <= 60) {
-            return "yellow";
-        } else if (minutes <= 720) {
-            return "red";
-        } else {
-            return "purple";
-        }
-    }
 
 
     /**
@@ -347,8 +327,7 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
             int minutes = (int) ((new Date().getTime() - d.getTime()) / 1000
                                  / 60);
             if (d != null) {
-                String color = getColor(d);
-
+                String color = RdxApiHandler.getColor(d);
                 return HtmlUtils.span(
                     "&nbsp;" + s + " (" + minutes + " minutes ago)&nbsp;",
                     HtmlUtils.style("background:" + color + ";"));

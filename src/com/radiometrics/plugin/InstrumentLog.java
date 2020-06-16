@@ -88,7 +88,7 @@ public class InstrumentLog {
     /** _more_ */
     String entryId;
 
-    /** _more_          */
+    /** _more_ */
     Date date;
 
     /** _more_ */

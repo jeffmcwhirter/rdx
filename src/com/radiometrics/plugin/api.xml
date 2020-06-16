@@ -1,8 +1,9 @@
 
 
-<api handler="com.radiometrics.plugin.RdxApiHandler" id="rdx">
-  <api request="/rdx/status"    method="processStatus" admin="true"/>
-  <api request="/rdx/notifications"    method="processNotifications" admin="true"/>  
-  <api request="/rdx/changeinstruments"    method="processChangeInstruments" admin="true"/>    
+<api handler="com.radiometrics.plugin.RdxApiHandler" id="rdx" admin="false">
+  <api request="/rdx/instruments"    method="processInstruments"/>
+  <api request="/rdx/notifications"    method="processNotifications"/>  
+  <api request="/rdx/log"    method="processLog" />
+  <api request="/rdx/changeinstruments"    method="processChangeInstruments" />    
 </api>
 

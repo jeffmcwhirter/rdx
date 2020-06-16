@@ -5,8 +5,12 @@
 -- The pending event notifications
 DROP TABLE rdx_notifications;
 CREATE TABLE rdx_notifications (entry_id varchar(200),
-         		   event_type varchar(200),
-			   date ramadda.datetime);
+			   start_date ramadda.datetime,
+			   last_message_date ramadda.datetime,
+			   send_to varchar(500),			   
+			   number_emails int,
+			   number_sms int);
+
 
 
 -- The time series of instrument status

@@ -104,7 +104,7 @@ The contents are:
 
 * api.xml - Defines the api endpoints into RdxApiHandler
 
-* RdxApiHandler.java - This is a singleton class that gets instantiated at runtime. Implements the /rdx/status and /rdx/notifications pages. Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
+* RdxApiHandler.java - This is a singleton class that gets instantiated at runtime. Implements the /rdx/instruments and /rdx/notifications pages. Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
 
 
 * RdxInstrumentTypeHandler.java - Represents the instruments. Just does the decoration of the datetime values
