@@ -44,7 +44,7 @@ fields="name,instrument_id,type,network,data,ldm"
 colorCells="network,data,ldm"
 }} 
 {{display_barchart fields=network,data,ldm
-colors="blue"
+colors="blue,lightblue,aqua"
 indexField=instrument_id forceStrings=true chartRight=80}}
 {{display_map  width="100%"  height="400" iconField=icon iconSize=16
 linkField=entry_url titleField=name descriptionField=description
