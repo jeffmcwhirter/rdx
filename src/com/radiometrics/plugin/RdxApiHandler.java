@@ -340,7 +340,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                     instrumentMonitorStatus =
                         "Last ran instrument monitor at "
                         + formatDate(new Date());
-                    checkInstruments();
+                    checkInstruments(false);
                     errorCount = 0;
                 }
             } catch (Exception exc) {
@@ -754,6 +754,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                                   : request.get("randomize", true);
         Date    now             = new Date();
         long    minutesToMillis = 60000;
+
         for (int i = 1; i <= 16; i++) {
             Date network = new Date(now.getTime()
                                     - (long) ((Math.random() * 60)
@@ -780,7 +781,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         if (request == null) {
             return null;
         }
-        checkInstruments();
+        checkInstruments(true);
 
         return processInstruments(request);
     }
@@ -1132,7 +1133,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      *
      * @throws Exception on badness
      */
-    private void checkInstruments() throws Exception {
+    private void checkInstruments(boolean test) throws Exception {
         List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
             return;
@@ -1147,14 +1148,13 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             store = elapsedTime > storeInterval;
         }
 
-        //TODO
-        boolean test = true;
+	boolean addNotification = true;
         for (InstrumentData instrument : instruments) {
-            checkInstrument(instrument, store);
-            if (test) {
+            checkInstrument(instrument, store,addNotification);
+            if (test && addNotification) {
                 List<RdxNotifications> notifications = getNotifications(null);
                 if (notifications.size() > 0) {
-                    break;
+		    addNotification = false;		    
                 }
             }
         }
@@ -1250,12 +1250,12 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * Compare the instrument (from rdx db) to the internal RAMADDA instrument entry
      *
      * @param instrument The instrument
-     * @param store Force storing the instrument state
+     * @param storeTimeseries Force storing the instrument state
      *
      * @return true if instrument is out of date
      * @throws Exception On badness
      */
-    private boolean checkInstrument(InstrumentData instrument, boolean store)
+    private boolean checkInstrument(InstrumentData instrument, boolean storeTimeseries, boolean addNotification)
             throws Exception {
         //Find the station entries
         Entry entry = getInstrumentEntry(instrument);
@@ -1284,7 +1284,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM);
 
 
-
         if ( !Misc.equals(network, instrument.network)) {
             changed = true;
             entry.setValue(RdxInstrumentTypeHandler.IDX_LAST_NETWORK,
@@ -1303,9 +1302,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         }
 
         //TODO: test for now
-        store = true;
+        storeTimeseries = true;
 
-        if (storeInstrumentStatus && (store || changed)) {
+        if (storeInstrumentStatus && (storeTimeseries || changed)) {
             //            System.err.println("\tStoring instrument log");
             InstrumentLog.store(repository, entry);
         }
@@ -1319,11 +1318,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         //Save the ramadda entry
         getEntryManager().updateEntry(getRepository().getTmpRequest(), entry);
+
+	if(!addNotification) return false;
+
+
         boolean ok = isInstrumentOk(entry);
         if (ok) {
             //If all OK then remove any pending notification and return
             deleteNotification(entry);
-
             return false;
         }
 
