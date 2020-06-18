@@ -69,6 +69,16 @@ public class RdxInstrumentCollectionTypeHandler extends ExtensibleGroupTypeHandl
                       getRepository().getProperty("rdx.wiki.colorBySteps",
                           DEFAULT_COLORSTEPS));
         }
+
+        if (props.get("colorTableLabels") == null) {
+            props.put("colorTableLabels",
+                      getRepository().getProperty("rdx.wiki.colorTableLabels",
+                          DEFAULT_COLORTABLELABELS));
+        }
+
+
+
+
     }
 
 

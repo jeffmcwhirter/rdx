@@ -82,5 +82,7 @@ public interface RdxConstants {
     /** _more_          */
     public String DEFAULT_COLORSTEPS = "15,60,720";
 
+    public String DEFAULT_COLORTABLELABELS = "0-15 minutes,15-60 minutes,1-12 hours,>12 hours";
+
 
 }

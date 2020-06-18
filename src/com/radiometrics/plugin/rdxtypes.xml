@@ -51,7 +51,6 @@ showPoints=true
 radius="12"  strokeColor=transparent
 colorBy=data colorByFields=network,data,ldm 
 colorTableShowRange=false
-colorTableLabels="0-15 minutes,15-60 minutes,1-12 hours,>12 hours"
 }}
 -section
 ]]>
