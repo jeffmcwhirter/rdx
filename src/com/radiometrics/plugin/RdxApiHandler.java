@@ -16,6 +16,7 @@ import org.ramadda.util.sql.SqlUtil;
 
 import ucar.unidata.util.LogUtil;
 import ucar.unidata.util.Misc;
+import ucar.unidata.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -110,6 +111,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     private SimpleDateFormat sdf;
 
 
+    /** _more_          */
+    public static List<String> colors;
+
+    /** _more_          */
+    public static List<Integer> colorSteps;
+
+
+
     /**
      *     ctor
      *
@@ -122,6 +131,20 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         super(repository);
         timeZone = TimeZone.getTimeZone(
             getRepository().getProperty(PROP_RDX_TIMEZONE, "America/Denver"));
+
+        colors =
+            StringUtil.split(getRepository().getProperty("rdx.wiki.colors",
+                DEFAULT_COLORS), ",", true, true);
+
+        colorSteps = new ArrayList<Integer>();
+        for (String step :
+                StringUtil.split(
+                    getRepository().getProperty(
+                        "rdx.wiki.colorBySteps", DEFAULT_COLORSTEPS), ",",
+                            true, true)) {
+            colorSteps.add(new Integer(step));
+        }
+
 
         sdf = new SimpleDateFormat(
             getRepository().getProperty(
@@ -218,11 +241,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             }
         });
 
-        //      getDatabaseManager().generateBeans(
-        //                                         "com.radiometrics.plugin",
-        //                                         "(rdx_notifications|xxx_rdx_instrument_status_log|xxx_rdx_test_instrument_status)");
+        if (false) {
+            getDatabaseManager().generateBeans(
+                "com.radiometrics.plugin",
+                "(rdx_notifications|rdx_instrument_log|xxx_rdx_test_instrument_status)");
+        }
 
     }
+
 
 
     /**
@@ -235,15 +261,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     public static String getColor(Date d) {
         int minutes = (int) ((new Date().getTime() - d.getTime()) / 1000
                              / 60);
-        if (minutes <= 15) {
-            return "green";
-        } else if (minutes <= 60) {
-            return "yellow";
-        } else if (minutes <= 720) {
-            return "red";
-        } else {
-            return "purple";
+        for (int i = 0; i < colorSteps.size(); i++) {
+            int step = colorSteps.get(i);
+            if (minutes <= step) {
+                return colors.get(i);
+            }
         }
+
+        return colors.get(colors.size() - 1);
     }
 
 
@@ -1131,6 +1156,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     /**
      * Check the instruments
      *
+     *
+     * @param test _more_
      * @throws Exception on badness
      */
     private void checkInstruments(boolean test) throws Exception {
@@ -1148,13 +1175,13 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             store = elapsedTime > storeInterval;
         }
 
-	boolean addNotification = true;
+        boolean addNotification = true;
         for (InstrumentData instrument : instruments) {
-            checkInstrument(instrument, store,addNotification);
+            checkInstrument(instrument, store, addNotification);
             if (test && addNotification) {
                 List<RdxNotifications> notifications = getNotifications(null);
                 if (notifications.size() > 0) {
-		    addNotification = false;		    
+                    addNotification = false;
                 }
             }
         }
@@ -1251,11 +1278,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      *
      * @param instrument The instrument
      * @param storeTimeseries Force storing the instrument state
+     * @param addNotification _more_
      *
      * @return true if instrument is out of date
      * @throws Exception On badness
      */
-    private boolean checkInstrument(InstrumentData instrument, boolean storeTimeseries, boolean addNotification)
+    private boolean checkInstrument(InstrumentData instrument,
+                                    boolean storeTimeseries,
+                                    boolean addNotification)
             throws Exception {
         //Find the station entries
         Entry entry = getInstrumentEntry(instrument);
@@ -1306,7 +1336,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         if (storeInstrumentStatus && (storeTimeseries || changed)) {
             //            System.err.println("\tStoring instrument log");
-            InstrumentLog.store(repository, entry);
+            RdxInstrumentLogImpl.store(repository, entry);
         }
 
         //        System.err.println("checkInstrument:" + entry + " changed:" + changed);
@@ -1319,13 +1349,16 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         //Save the ramadda entry
         getEntryManager().updateEntry(getRepository().getTmpRequest(), entry);
 
-	if(!addNotification) return false;
+        if ( !addNotification) {
+            return false;
+        }
 
 
         boolean ok = isInstrumentOk(entry);
         if (ok) {
             //If all OK then remove any pending notification and return
             deleteNotification(entry);
+
             return false;
         }
 

@@ -26,10 +26,10 @@ import java.util.Date;
  *
  * @author         Enter your name here...    
  */
-public class RdxNotifications extends DbObject {
+public class RdxInstrumentLog extends DbObject {
 
     /** _more_          */
-    public static final String DB_TABLE_NAME = "rdx_notifications";
+    public static final String DB_TABLE_NAME = "rdx_instrument_log";
 
     /** _more_          */
     public static final String COL_ENTRY_ID = DB_TABLE_NAME + ".entry_id";
@@ -38,42 +38,47 @@ public class RdxNotifications extends DbObject {
     public static final String COL_NODOT_ENTRY_ID = "entry_id";
 
     /** _more_          */
-    public static final String COL_START_DATE = DB_TABLE_NAME + ".start_date";
+    public static final String COL_DATE = DB_TABLE_NAME + ".date";
 
     /** _more_          */
-    public static final String COL_NODOT_START_DATE = "start_date";
+    public static final String COL_NODOT_DATE = "date";
 
     /** _more_          */
-    public static final String COL_LAST_MESSAGE_DATE = DB_TABLE_NAME
-                                                       + ".last_message_date";
+    public static final String COL_INSTRUMENT_ID = DB_TABLE_NAME
+                                                   + ".instrument_id";
 
     /** _more_          */
-    public static final String COL_NODOT_LAST_MESSAGE_DATE =
-        "last_message_date";
+    public static final String COL_NODOT_INSTRUMENT_ID = "instrument_id";
 
     /** _more_          */
-    public static final String COL_SEND_TO = DB_TABLE_NAME + ".send_to";
+    public static final String COL_ELAPSED_NETWORK_MINUTES =
+        DB_TABLE_NAME + ".elapsed_network_minutes";
 
     /** _more_          */
-    public static final String COL_NODOT_SEND_TO = "send_to";
+    public static final String COL_NODOT_ELAPSED_NETWORK_MINUTES =
+        "elapsed_network_minutes";
 
     /** _more_          */
-    public static final String COL_NUMBER_EMAILS = DB_TABLE_NAME
-                                                   + ".number_emails";
+    public static final String COL_ELAPSED_DATA_MINUTES =
+        DB_TABLE_NAME + ".elapsed_data_minutes";
 
     /** _more_          */
-    public static final String COL_NODOT_NUMBER_EMAILS = "number_emails";
+    public static final String COL_NODOT_ELAPSED_DATA_MINUTES =
+        "elapsed_data_minutes";
 
     /** _more_          */
-    public static final String COL_NUMBER_SMS = DB_TABLE_NAME + ".number_sms";
+    public static final String COL_ELAPSED_LDM_MINUTES =
+        DB_TABLE_NAME + ".elapsed_ldm_minutes";
 
     /** _more_          */
-    public static final String COL_NODOT_NUMBER_SMS = "number_sms";
+    public static final String COL_NODOT_ELAPSED_LDM_MINUTES =
+        "elapsed_ldm_minutes";
 
     /** _more_          */
     public static final String[] ARRAY = new String[] {
-        COL_ENTRY_ID, COL_START_DATE, COL_LAST_MESSAGE_DATE, COL_SEND_TO,
-        COL_NUMBER_EMAILS, COL_NUMBER_SMS
+        COL_ENTRY_ID, COL_DATE, COL_INSTRUMENT_ID,
+        COL_ELAPSED_NETWORK_MINUTES, COL_ELAPSED_DATA_MINUTES,
+        COL_ELAPSED_LDM_MINUTES
     };
 
     /** _more_          */
@@ -92,19 +97,19 @@ public class RdxNotifications extends DbObject {
     private String entry_id;
 
     /** _more_          */
-    private Date start_date;
+    private Date date;
 
     /** _more_          */
-    private Date last_message_date;
+    private String instrument_id;
 
     /** _more_          */
-    private String send_to;
+    private int elapsed_network_minutes;
 
     /** _more_          */
-    private int number_emails;
+    private int elapsed_data_minutes;
 
     /** _more_          */
-    private int number_sms;
+    private int elapsed_ldm_minutes;
 
 
     /**
@@ -114,13 +119,14 @@ public class RdxNotifications extends DbObject {
      *
      * @throws Exception _more_
      */
-    public RdxNotifications(ResultSet results) throws Exception {
-        entry_id          = results.getString(COL_NODOT_ENTRY_ID);
-        start_date        = getDate(results, COL_NODOT_START_DATE);
-        last_message_date = getDate(results, COL_NODOT_LAST_MESSAGE_DATE);
-        send_to           = results.getString(COL_NODOT_SEND_TO);
-        number_emails     = results.getInt(COL_NODOT_NUMBER_EMAILS);
-        number_sms        = results.getInt(COL_NODOT_NUMBER_SMS);
+    public RdxInstrumentLog(ResultSet results) throws Exception {
+        entry_id      = results.getString(COL_NODOT_ENTRY_ID);
+        date          = getDate(results, COL_NODOT_DATE);
+        instrument_id = results.getString(COL_NODOT_INSTRUMENT_ID);
+        elapsed_network_minutes =
+            results.getInt(COL_NODOT_ELAPSED_NETWORK_MINUTES);
+        elapsed_data_minutes = results.getInt(COL_NODOT_ELAPSED_DATA_MINUTES);
+        elapsed_ldm_minutes  = results.getInt(COL_NODOT_ELAPSED_LDM_MINUTES);
     }
 
     /**
@@ -146,8 +152,8 @@ public class RdxNotifications extends DbObject {
      *
      * @return _more_
      */
-    public Date getStartDate() {
-        return start_date;
+    public Date getDate() {
+        return date;
     }
 
     /**
@@ -155,8 +161,8 @@ public class RdxNotifications extends DbObject {
      *
      * @param v _more_
      */
-    public void setStartDate(Date v) {
-        start_date = v;
+    public void setDate(Date v) {
+        date = v;
     }
 
     /**
@@ -164,8 +170,8 @@ public class RdxNotifications extends DbObject {
      *
      * @return _more_
      */
-    public Date getLastMessageDate() {
-        return last_message_date;
+    public String getInstrumentId() {
+        return instrument_id;
     }
 
     /**
@@ -173,8 +179,8 @@ public class RdxNotifications extends DbObject {
      *
      * @param v _more_
      */
-    public void setLastMessageDate(Date v) {
-        last_message_date = v;
+    public void setInstrumentId(String v) {
+        instrument_id = v;
     }
 
     /**
@@ -182,8 +188,8 @@ public class RdxNotifications extends DbObject {
      *
      * @return _more_
      */
-    public String getSendTo() {
-        return send_to;
+    public int getElapsedNetworkMinutes() {
+        return elapsed_network_minutes;
     }
 
     /**
@@ -191,8 +197,8 @@ public class RdxNotifications extends DbObject {
      *
      * @param v _more_
      */
-    public void setSendTo(String v) {
-        send_to = v;
+    public void setElapsedNetworkMinutes(int v) {
+        elapsed_network_minutes = v;
     }
 
     /**
@@ -200,8 +206,8 @@ public class RdxNotifications extends DbObject {
      *
      * @return _more_
      */
-    public int getNumberEmails() {
-        return number_emails;
+    public int getElapsedDataMinutes() {
+        return elapsed_data_minutes;
     }
 
     /**
@@ -209,8 +215,8 @@ public class RdxNotifications extends DbObject {
      *
      * @param v _more_
      */
-    public void setNumberEmails(int v) {
-        number_emails = v;
+    public void setElapsedDataMinutes(int v) {
+        elapsed_data_minutes = v;
     }
 
     /**
@@ -218,8 +224,8 @@ public class RdxNotifications extends DbObject {
      *
      * @return _more_
      */
-    public int getNumberSms() {
-        return number_sms;
+    public int getElapsedLdmMinutes() {
+        return elapsed_ldm_minutes;
     }
 
     /**
@@ -227,8 +233,8 @@ public class RdxNotifications extends DbObject {
      *
      * @param v _more_
      */
-    public void setNumberSms(int v) {
-        number_sms = v;
+    public void setElapsedLdmMinutes(int v) {
+        elapsed_ldm_minutes = v;
     }
 
 

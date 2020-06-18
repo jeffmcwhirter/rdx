@@ -188,24 +188,24 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
             SimpleDateFormat sdf =
                 RepositoryUtil.makeDateFormat("yyyyMMdd'T'HHmmss");
             StringBuilder s = new StringBuilder("#converted stream\n");
-            List<InstrumentLog> logs =
-                InstrumentLog.readInstrumentsLog(
+            List<RdxInstrumentLog> logs =
+                RdxInstrumentLogImpl.readInstrumentsLog(
                     entry.getTypeHandler().getRepository(), entry);
 
             long now = new Date().getTime();
             for (int i = logs.size() - 1; i >= 0; i--) {
-                InstrumentLog log = logs.get(i);
+                RdxInstrumentLog log = logs.get(i);
                 s.append(sdf.format(log.getDate()));
                 s.append(",");
                 s.append(entry.getLatitude());
                 s.append(",");
                 s.append(entry.getLongitude());
                 s.append(",");
-                s.append(log.getElapsedNetwork());
+                s.append(log.getElapsedNetworkMinutes());
                 s.append(",");
-                s.append(log.getElapsedData());
+                s.append(log.getElapsedDataMinutes());
                 s.append(",");
-                s.append(log.getElapsedLdm());
+                s.append(log.getElapsedLdmMinutes());
                 s.append("\n");
             }
             ByteArrayInputStream bais =

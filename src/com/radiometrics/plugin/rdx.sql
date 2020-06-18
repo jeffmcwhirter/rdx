@@ -2,8 +2,11 @@
 --SQL for RAMADDA's notifications and log of instrument status
 -----------------------------------------------------------------------
 
--- The pending event notifications
+--TODO: don't drop the tables when we are in production
 DROP TABLE rdx_notifications;
+DROP TABLE rdx_instrument_log;
+
+-- The pending event notifications
 CREATE TABLE rdx_notifications (entry_id varchar(200),
 			   start_date ramadda.datetime,
 			   last_message_date ramadda.datetime,
@@ -14,8 +17,7 @@ CREATE TABLE rdx_notifications (entry_id varchar(200),
 
 
 -- The time series of instrument status
-DROP TABLE rdx_instrument_status_log;
-CREATE TABLE rdx_instrument_status_log (
+CREATE TABLE rdx_instrument_log (
        entry_id varchar(200),
        date ramadda.datetime,
        instrument_id varchar(200),
@@ -24,9 +26,13 @@ CREATE TABLE rdx_instrument_status_log (
        elapsed_ldm_minutes int
 );
 
-CREATE INDEX rdx_instrument_status_log_entry_index ON rdx_instrument_status_log (entry_id);
+CREATE INDEX rdx_instrument_log_entry_index ON rdx_instrument_log (entry_id);
 
 
+
+-----------------------------------------------------------------------
+--This is the schema that mimics RDX's instrument status database
+-----------------------------------------------------------------------
 DROP TABLE rdx_test_instrument_type;
 CREATE TABLE rdx_test_instrument_type (
        type_id int,

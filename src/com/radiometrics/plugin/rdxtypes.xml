@@ -9,7 +9,7 @@ type definition for instrument collections
 the metadata attribute defines the metadata type (from metadata.xml) that is listed in the New property section of 
 a collection entry
 -->
-  <type name="rdx_collection"  description="RDX Collection" handler="org.ramadda.repository.type.ExtensibleGroupTypeHandler" category="RDX"   metadata="rdx_notification" >
+  <type name="rdx_collection"  description="RDX Collection" handler="com.radiometrics.plugin.RdxInstrumentCollectionTypeHandler" category="RDX"   metadata="rdx_notification" >
 
 <!-- define the icon -->
      <property name="icon" value="/rdx/radiometrics_icon.png"/>
@@ -29,8 +29,6 @@ The :rem are comments (ala DOS comments)
 {{property name=addAttributes value=true}} 
 :rem Define properties that all displays use. The convert data adds a derived quantity
 {{group filterFields=network,data,ldm hideFilterWidget=true sortFields=name
-colors=green,yellow,red,purple
-colorBySteps=15,60,720
 convertData="
 derived(field=network, function=Utils.minutesSince(last_network));
 derived(field=data, function=Utils.minutesSince(last_data));
