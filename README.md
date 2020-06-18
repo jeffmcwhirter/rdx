@@ -4,11 +4,14 @@ The Radiometrics RAMADDA  National Mesonet Program Monitor  is contained within 
 
  
 This plugin runs under RAMADDA. 
-To install RAMADDA on an AWS EC2 instance see <a href="https://geodesystems.com/repository/a/release#awsinstall">https://geodesystems.com/repository/a/release#awsinstall</a>.
+To install RAMADDA on an AWS EC2 instance see
+<a href="https://geodesystems.com/repository/userguide/aws.html">https://geodesystems.com/repository/userguide/aws.html</a>.
+
 You can also run RAMADDA in other environments including on your laptop. More information is provided 
 <a href="https://geodesystems.com/repository/userguide/installing.html">here</a>.
 
-Once RAMADDA is installed copy the <a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxplugin.jar">rdxplugin.jar</a> to the RAMADDA plugin directory on your server at:
+Once RAMADDA is installed copy the 
+<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxplugin.jar">rdxplugin.jar</a> to the RAMADDA plugin directory on your server at:
 <pre>&lt;RAMADDA home&gt;/plugins</pre>
 e.g., on AWS this would be:
 <pre>/mnt/ramadda/repository/plugins</pre>
@@ -17,19 +20,20 @@ Then restart the RAMADDA server. e.g.:
 <pre>sudo service ramadda start</pre>
 
 
-
 # Initial instrument content
-The initial instrument collection and associated content is provided as a RAMADDA export file. This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
-<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) select Import and upload the rdxexport.zip file.
+The initial instrument collection and associated content is provided as a RAMADDA export file. 
+This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
+<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) 
+choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) 
+select Import and upload the rdxexport.zip file.
 
 
 # Configuration
-
-Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database, email and SMS settings.
+Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database and configure email and SMS settings.
 These configuration options are set in the rdx.properties file 
 (example <a href="rdx.properties">here</a>). 
 If not already done so copy this file to your RAMADDA server's
-<a href="https://geodesystems.com/repository/userguide/installing.html#home">home directory</a>.
+<a href="https://geodesystems.com/repository/userguide/installing.html#home">home directory</a> (e.g., /mnt/ramadda/repository on AWS).
 
 ## Configuring the RDX database
 
@@ -41,9 +45,15 @@ rdx.db.password=&lt;database password&gt;
 </pre>
 
 
-e.g. for running with Postgres use:
+e.g. for running with Postgres on the same machine as RAMADDA use:
 <pre>
 rdx.db.url=jdbc:postgresql://localhost/repository?UseServerSidePrepare=1&Protocol=-1
+</pre>
+
+
+You can run RAMADDA-RDX in test mode by setting the below property. This uses an internal test schema that mimics Radiometrics instrument status database.
+<pre>
+rdx.test=true
 </pre>
 
 
@@ -51,7 +61,8 @@ rdx.db.url=jdbc:postgresql://localhost/repository?UseServerSidePrepare=1&Protoco
 To send email notifications when running in AWS EC2 you need to do a couple of things. 
 * Enable AWS SES. First,  you need to enable Amazon's <a href="https://docs.bitnami.com/aws/how-to/use-ses/">Simple Email Service</a> and verify your email addresses. 
 
-* Configure RAMADDA. In  RAMADDA's  Admin Settings-Site and Contact Information specify an administrator email (as specified in SES) and provide the Mail server, e.g.:
+* Configure RAMADDA. In  RAMADDA's  Admin Settings-&gt;Site and Contact Information page 
+specify an administrator email (as specified in SES) and provide the Mail server, e.g.:
 
 <pre>
 email-smtp.us-west-2.amazonaws.com
@@ -67,18 +78,23 @@ ramadda.admin.smtp.starttls=true
 
 ## Configuring text message settings
 
-To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins. If you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it into the server's &lt;ramadda home dir&gt;/plugins directory.
+To send text message notifications we use RAMADDA's phone plugin which is included in  the set of core plugins.
+If you have not installed the core plugins then build the phone plugin from the RAMADDA repository and copy it 
+into the server's &lt;ramadda home dir&gt;/plugins directory.
 
 
 The phone plugin uses <a href="https://www.twilio.com/">Twilio</a> as the message gateway. 
 You will need to create an account with Twilio and configure your RAMADDA server. 
-The 2 main properties to set in your rdx.properties are:
+The 3 main properties to set in your rdx.properties are:
 <pre>
-#Twilio app id
-twilio.appid=
+#Twilio account id
+twilio.accountsid=
 
 #Twili authorization token (for reading the transcription)
 twilio.authtoken=
+
+#Phone number twilio assigns you
+twilio.phone=
 </pre>
 
 
@@ -96,16 +112,21 @@ ant
 This builds dist/rdxplugin.jar and copies it into your local .ramadda/plugins directory. To release it to an external server you'll need to copy the plugin to the server's ramadda/plugins directory and restart the repository.
 
 
+## Other configuration options
+There are a number of other configuration options available in the rdx.properties file including
+preferred timezone and date format, time thresholds for determining when an notifications should be sent for an instrument,
+how often notifications should be sent, etc.
 
-# Plugin contents
+
+# Radiometrics plugin contents
 The plugin is in: <a href=src/com/radiometrics/plugin>src/com/radiometrics/plugin</a>
 
 The contents are:
 
-* api.xml - Defines the api endpoints into RdxApiHandler
-
 * RdxApiHandler.java - This is a singleton class that gets instantiated at runtime. Implements the /rdx/instruments and /rdx/notifications pages. Also creates 2 threads  - one for monitoring the external instrument status database. One for handling notifications
 
+
+* api.xml - Defines the api endpoints into RdxApiHandler
 
 * RdxInstrumentTypeHandler.java - Represents the instruments. Just does the decoration of the datetime values
 
