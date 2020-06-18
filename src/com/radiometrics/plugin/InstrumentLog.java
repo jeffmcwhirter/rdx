@@ -1,17 +1,6 @@
 /*
-* Copyright (c) 2008-2019 Geode Systems LLC
+* Copyright (c) 2020 Radiometrics Inc.
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-* 
-*     http://www.apache.org/licenses/LICENSE-2.0
-* 
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
 */
 
 package com.radiometrics.plugin;
@@ -20,20 +9,12 @@ package com.radiometrics.plugin;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import org.ramadda.repository.*;
-import org.ramadda.repository.auth.*;
-import org.ramadda.repository.metadata.*;
-import org.ramadda.repository.search.*;
 import org.ramadda.repository.type.*;
-import org.ramadda.util.HtmlUtils;
-import org.ramadda.util.Json;
-import org.ramadda.util.Utils;
 import org.ramadda.util.sql.Clause;
 import org.ramadda.util.sql.SqlUtil;
 
-import org.w3c.dom.*;
 
 import ucar.unidata.util.Misc;
-import ucar.unidata.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -41,72 +22,67 @@ import java.sql.Statement;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 
 
 /**
- * Class description
+ * Holds one record from the instrument time series database
  *
  *
- * @version        $version$, Sat, May 30, '20
- * @author         Enter your name here...
+ * @author Jeff McWhirter
  */
 public class InstrumentLog {
 
-    /** _more_ */
+    /** db table name */
     public static final String TABLE = "rdx_instrument_status_log";
 
-    /** _more_ */
+    /** db column name */
     public static final String COL_ENTRY_ID = "entry_id";
 
-    /** _more_ */
+    /** db column name */
     public static final String COL_DATE = "date";
 
-    /** _more_ */
+    /** db column name */
     public static final String COL_INSTRUMENT_ID = "instrument_id";
 
-    /** _more_ */
+    /** db column name */
     public static final String COL_ELAPSED_NETWORK_MINUTES =
         "elapsed_network_minutes";
 
-    /** _more_ */
+    /** db column name */
     public static final String COL_ELAPSED_DATA_MINUTES =
         "elapsed_data_minutes";
 
-    /** _more_ */
+    /** db column name */
     public static final String COL_ELAPSED_LDM_MINUTES =
         "elapsed_ldm_minutes";
 
-    /** _more_ */
+    /** sql insert string */
     private static String insert;
 
-
-
-
-    /** _more_ */
+    /** attribute from db */
     String entryId;
 
-    /** _more_ */
+    /** attribute from db */
     Date date;
 
-    /** _more_ */
+    /** attribute from db */
     int elapsedNetwork;
 
-    /** _more_ */
+    /** attribute from db */
     int elapsedData;
 
-    /** _more_ */
+    /** attribute from db */
     int elapsedLdm;
 
     /**
-     * _more_
+     * create the object from the db
      *
-     * @param repository _more_
-     * @param results _more_
+     * @param repository the repository
+     * @param results db result set
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public InstrumentLog(Repository repository, ResultSet results)
             throws Exception {
@@ -121,36 +97,36 @@ public class InstrumentLog {
 
 
     /**
-     * _more_
+     * attribute access
      *
-     * @return _more_
+     * @return date when stored
      */
     public Date getDate() {
         return date;
     }
 
     /**
-     * _more_
+     * attribute access
      *
-     * @return _more_
+     * @return elapsed time
      */
     public int getElapsedNetwork() {
         return elapsedNetwork;
     }
 
     /**
-     * _more_
+     * attribute access
      *
-     * @return _more_
+     * @return elapsed time
      */
     public int getElapsedData() {
         return elapsedData;
     }
 
     /**
-     * _more_
+     * attribute access
      *
-     * @return _more_
+     * @return elapsed time
      */
     public int getElapsedLdm() {
         return elapsedLdm;
@@ -158,12 +134,12 @@ public class InstrumentLog {
 
 
     /**
-     * _more_
+     * store the instrument
      *
-     * @param repository _more_
-     * @param entry _more_
+     * @param repository the repository
+     * @param entry the entry
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public static void store(Repository repository, Entry entry)
             throws Exception {
@@ -196,14 +172,14 @@ public class InstrumentLog {
 
 
     /**
-     * _more_
+     * Read the instrument log from the db for the given entry
      *
-     * @param repository _more_
-     * @param entry _more_
+     * @param repository the repository
+     * @param entry the entry
      *
-     * @return _more_
+     * @return List of instrumentlog objects
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public static List<InstrumentLog> readInstrumentsLog(
             Repository repository, Entry entry)

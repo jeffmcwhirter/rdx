@@ -1,17 +1,6 @@
 /*
-* Copyright (c) 2008-2019 Geode Systems LLC
+* Copyright (c) 2020 Radiometrics Inc.
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-* 
-*     http://www.apache.org/licenses/LICENSE-2.0
-* 
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
 */
 
 package com.radiometrics.plugin;
@@ -84,12 +73,12 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
-     * _more_
+     * constructor
      *
-     * @param repository _more_
-     * @param entryNode _more_
+     * @param repository The repository
+     * @param entryNode xml node from rdxtypes.xml
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     public RdxInstrumentTypeHandler(Repository repository, Element entryNode)
             throws Exception {
@@ -98,11 +87,11 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
-     * _more_
+     * Can entry objects be cache
      *
-     * @param entry _more_
+     * @param entry The entry
      *
-     * @return _more_
+     * @return false. We always want to go the db
      */
     @Override
     public boolean getCanCache(Entry entry) {
@@ -110,9 +99,9 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     }
 
     /**
-     * _more_
+     * Is this entry type a group
      *
-     * @return _more_
+     * @return true
      */
     @Override
     public boolean isGroup() {
@@ -120,14 +109,14 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     }
 
     /**
-     * _more_
+     * Make the RecordFile for the instrument status time series
      *
-     * @param request _more_
-     * @param entry _more_
+     * @param request The request
+     * @param entry The entry
      *
-     * @return _more_
+     * @return record file
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     @Override
     public RecordFile doMakeRecordFile(Request request, Entry entry)
@@ -137,27 +126,26 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
-     * Class description
+     * Processes the instrument status time series
      *
      *
-     * @version        $version$, Tue, Jun 9, '20
-     * @author         Enter your name here...
+     * @author Jeff McWhirter
      */
     public class RdxRecordFile extends CsvFile {
 
-        /** _more_ */
+        /** The request */
         private Request request;
 
-        /** _more_ */
+        /** The entry */
         private Entry entry;
 
         /**
-         * _more_
+         * ctor
          *
-         * @param request _more_
-         * @param entry _more_
+         * @param request The request
+         * @param entry The entry
          *
-         * @throws IOException _more_
+         * @throws IOException On badness
          */
         public RdxRecordFile(Request request, Entry entry)
                 throws IOException {
@@ -166,15 +154,15 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
         }
 
         /**
-         * _more_
+         * Skip over records. Does nothing
          *
-         * @param visitInfo _more_
-         * @param record _more_
-         * @param howMany _more_
+         * @param visitInfo record file visit info
+         * @param record The record
+         * @param howMany How many to skip
          *
-         * @return _more_
+         * @return OK
          *
-         * @throws Exception _more_
+         * @throws Exception On badness
          */
         @Override
         public boolean skip(VisitInfo visitInfo, Record record, int howMany)
@@ -184,13 +172,13 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
         }
 
         /**
-         * _more_
+         * Make the time series input stream from the db
          *
-         * @param buffered _more_
+         * @param buffered noop
          *
-         * @return _more_
+         * @return input stream
          *
-         * @throws Exception _more_
+         * @throws Exception On badness
          */
         @Override
         public InputStream doMakeInputStream(boolean buffered)
@@ -227,11 +215,11 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
         }
 
         /**
-         * _more_
+         * Make the metadata fields
          *
-         * @param request _more_
+         * @param request request
          *
-         * @throws Exception _more_
+         * @throws Exception On badness
          */
         private void makeFields(Request request) throws Exception {
             StringBuilder fields = new StringBuilder();
@@ -266,14 +254,14 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
-     * _more_
+     * Hook in case we need to change the entry icon on the fly
      *
-     * @param request _more_
-     * @param entry _more_
+     * @param request request
+     * @param entry entry
      *
-     * @return _more_
+     * @return url to image icon
      *
-     * @throws Exception _more_
+     * @throws Exception On badness
      */
     @Override
     public String getEntryIconUrl(Request request, Entry entry)
@@ -284,12 +272,12 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
-     * _more_
+     * return the color for the instrument
      *
-     * @param entry _more_
-     * @param attr _more_
+     * @param entry instrument entry
+     * @param attr what
      *
-     * @return _more_
+     * @return color
      */
     @Override
     public String getDisplayAttribute(Entry entry, String attr) {
@@ -308,14 +296,14 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
-     * _more_
+     * decorate the attribute value. this returns a span with the appropriate background color for dates
      *
-     * @param request _more_
-     * @param entry _more_
-     * @param column _more_
-     * @param s _more_
+     * @param request the request
+     * @param entry the entry
+     * @param column what attribute
+     * @param s the incoming value
      *
-     * @return _more_
+     * @return decorated value
      */
     @Override
     public String decorateValue(Request request, Entry entry, Column column,
