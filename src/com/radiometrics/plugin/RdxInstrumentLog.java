@@ -24,91 +24,91 @@ import java.util.Date;
  * Class description
  *
  *
- * @author         Enter your name here...    
+ * @author         Enter your name here...
  */
 public class RdxInstrumentLog extends DbObject {
 
-    /** _more_          */
+    /** _more_ */
     public static final String DB_TABLE_NAME = "rdx_instrument_log";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_ENTRY_ID = DB_TABLE_NAME + ".entry_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_ENTRY_ID = "entry_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_DATE = DB_TABLE_NAME + ".date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_DATE = "date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_INSTRUMENT_ID = DB_TABLE_NAME
                                                    + ".instrument_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_INSTRUMENT_ID = "instrument_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_ELAPSED_NETWORK_MINUTES =
         DB_TABLE_NAME + ".elapsed_network_minutes";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_ELAPSED_NETWORK_MINUTES =
         "elapsed_network_minutes";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_ELAPSED_DATA_MINUTES =
         DB_TABLE_NAME + ".elapsed_data_minutes";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_ELAPSED_DATA_MINUTES =
         "elapsed_data_minutes";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_ELAPSED_LDM_MINUTES =
         DB_TABLE_NAME + ".elapsed_ldm_minutes";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_ELAPSED_LDM_MINUTES =
         "elapsed_ldm_minutes";
 
-    /** _more_          */
+    /** _more_ */
     public static final String[] ARRAY = new String[] {
         COL_ENTRY_ID, COL_DATE, COL_INSTRUMENT_ID,
         COL_ELAPSED_NETWORK_MINUTES, COL_ELAPSED_DATA_MINUTES,
         COL_ELAPSED_LDM_MINUTES
     };
 
-    /** _more_          */
+    /** _more_ */
     public static final String COLUMNS = SqlUtil.comma(ARRAY);
 
-    /** _more_          */
+    /** _more_ */
     public static final String NODOT_COLUMNS = SqlUtil.commaNoDot(ARRAY);
 
-    /** _more_          */
+    /** _more_ */
     public static final String INSERT =
         SqlUtil.makeInsert(DB_TABLE_NAME, NODOT_COLUMNS,
                            SqlUtil.getQuestionMarks(ARRAY.length));
 
 
-    /** _more_          */
+    /** _more_ */
     private String entry_id;
 
-    /** _more_          */
+    /** _more_ */
     private Date date;
 
-    /** _more_          */
+    /** _more_ */
     private String instrument_id;
 
-    /** _more_          */
+    /** _more_ */
     private int elapsed_network_minutes;
 
-    /** _more_          */
+    /** _more_ */
     private int elapsed_data_minutes;
 
-    /** _more_          */
+    /** _more_ */
     private int elapsed_ldm_minutes;
 
 

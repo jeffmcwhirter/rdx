@@ -49,12 +49,14 @@ public class RdxInstrumentCollectionTypeHandler extends ExtensibleGroupTypeHandl
     }
 
     /**
-     * _more_
+     * This gets called on any wiki display tag for entries of this type.
+     * This will add colors and colorBySteps properties if they haven't been specified
+     * allowing for those properties to be globally set from the rdx.properties file
      *
-     * @param entry _more_
-     * @param wikiUtil _more_
-     * @param tag _more_
-     * @param props _more_
+     * @param entry the entry
+     * @param wikiUtil util
+     * @param tag wiki tag
+     * @param props properties
      */
     @Override
     public void addWikiProperties(Entry entry, WikiUtil wikiUtil, String tag,
@@ -71,9 +73,10 @@ public class RdxInstrumentCollectionTypeHandler extends ExtensibleGroupTypeHandl
         }
 
         if (props.get("colorTableLabels") == null) {
-            props.put("colorTableLabels",
-                      getRepository().getProperty("rdx.wiki.colorTableLabels",
-                          DEFAULT_COLORTABLELABELS));
+            props.put(
+                "colorTableLabels",
+                getRepository().getProperty(
+                    "rdx.wiki.colorTableLabels", DEFAULT_COLORTABLELABELS));
         }
 
 

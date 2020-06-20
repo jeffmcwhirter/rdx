@@ -30,13 +30,27 @@ public interface RdxConstants {
     /** randomly changes instruments. defined in api.xml */
     public String PATH_CHANGEINSTRUMENTS = "/rdx/changeinstruments";
 
-
     /** property id */
     public String PROP_TEST = "rdx.test";
 
 
     /** property id */
     public String PROP_RUN = "rdx.monitor.run";
+
+    /** URL arg          */
+    public String ARG_RANDOMIZE = "randomize";
+
+    /** URL arg          */
+    public String ARG_DELETEALL = "deleteall";
+
+    /** URL arg          */
+    public String ARG_TESTNOTIFICATIONS = "testnotifications";
+
+    /** URL arg          */
+    public String ARG_DELETETIMESERIES = "deletetimeseries";
+
+    /** URL arg          */
+    public String ARG_DELETE_ENTRY = "deleteentry";
 
     /** property id */
     public String PROP_RDX_TIMEZONE = "rdx.timezone";
@@ -76,13 +90,19 @@ public interface RdxConstants {
         "rdx.instrument.log.interval";
 
 
-    /** _more_          */
+    /** defaults for wiki properties */
     public String DEFAULT_COLORS = "green,yellow,red,purple";
 
-    /** _more_          */
+    /** defaults for wiki properties */
     public String DEFAULT_COLORSTEPS = "15,60,720";
 
-    public String DEFAULT_COLORTABLELABELS = "0-15 minutes,15-60 minutes,1-12 hours,>12 hours";
+    /** defaults for wiki properties          */
+    public String DEFAULT_COLORTABLELABELS =
+        "0-15 minutes,15-60 minutes,1-12 hours,>12 hours";
+
+    /** html space    */
+    public String SPACE = "&nbsp;&nbsp;";
+
 
 
 }

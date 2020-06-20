@@ -90,7 +90,7 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     /**
      * get the columns to be used for point json. Skip the numberofpoints and properties
      *
-     * @return _more_
+     * @return columns to include in point json
      */
     @Override
     public List<Column> getColumnsForPointJson() {
