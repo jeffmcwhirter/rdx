@@ -22,6 +22,7 @@ import java.io.*;
 
 import java.text.SimpleDateFormat;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -85,6 +86,29 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
         super(repository, entryNode);
     }
 
+
+    /**
+     * get the columns to be used for point json. Skip the numberofpoints and properties
+     *
+     * @return _more_
+     */
+    @Override
+    public List<Column> getColumnsForPointJson() {
+        List<Column> tmp = super.getColumnsForPointJson();
+        if (tmp == null) {
+            return null;
+        }
+        List<Column> columns = new ArrayList<Column>();
+        for (Column c : tmp) {
+            if (c.getName().equals("numberofpoints")
+                    || c.getName().equals("properties")) {
+                continue;
+            }
+            columns.add(c);
+        }
+
+        return columns;
+    }
 
     /**
      * Can entry objects be cache
