@@ -2,9 +2,9 @@
 --SQL for RAMADDA's notifications and log of instrument status
 -----------------------------------------------------------------------
 
---TODO: don't drop the tables when we are in production
-DROP TABLE rdx_notifications;
-DROP TABLE rdx_instrument_log;
+--For testing
+--DROP TABLE rdx_notifications;
+--DROP TABLE rdx_instrument_log;
 
 -- The pending event notifications
 CREATE TABLE rdx_notifications (entry_id varchar(200),
