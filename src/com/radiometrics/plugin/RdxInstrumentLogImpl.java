@@ -63,9 +63,9 @@ public class RdxInstrumentLogImpl extends RdxInstrumentLog {
             throws Exception {
         if (insert == null) {
             insert = SqlUtil.makeInsert(DB_TABLE_NAME, new String[] {
-                COL_ENTRY_ID, COL_DATE, COL_INSTRUMENT_ID,
-                COL_ELAPSED_NETWORK_MINUTES, COL_ELAPSED_DATA_MINUTES,
-                COL_ELAPSED_LDM_MINUTES,
+                COL_NODOT_ENTRY_ID, COL_NODOT_DATE, COL_NODOT_INSTRUMENT_ID,
+                COL_NODOT_ELAPSED_NETWORK_MINUTES,
+                COL_NODOT_ELAPSED_DATA_MINUTES, COL_NODOT_ELAPSED_LDM_MINUTES,
             });
         }
 
@@ -108,8 +108,8 @@ public class RdxInstrumentLogImpl extends RdxInstrumentLog {
             new ArrayList<RdxInstrumentLog>();
         Statement stmt =
             SqlUtil.select(connection, "*", Misc.newList(DB_TABLE_NAME),
-                           Clause.eq(COL_ENTRY_ID, entry.getId()),
-                           SqlUtil.orderBy(COL_DATE, true), 5000);
+                           Clause.eq(COL_NODOT_ENTRY_ID, entry.getId()),
+                           SqlUtil.orderBy(COL_NODOT_DATE, true), 5000);
         try {
             SqlUtil.Iterator iter = new SqlUtil.Iterator(stmt);
             ResultSet        results;
