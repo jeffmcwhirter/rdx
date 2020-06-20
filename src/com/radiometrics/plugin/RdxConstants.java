@@ -14,6 +14,9 @@ public interface RdxConstants {
     /** page title prefix */
     public String TITLE = "Radiometrics NMPM";
 
+    /** Id of page template */
+    public String TEMPLATE_RADIOMETRICS = "radiometrics";
+
     /** lists instrument db. defined in api.xml */
     public String PATH_INSTRUMENTS = "/rdx/instruments";
 
@@ -37,19 +40,19 @@ public interface RdxConstants {
     /** property id */
     public String PROP_RUN = "rdx.monitor.run";
 
-    /** URL arg          */
+    /** URL arg */
     public String ARG_RANDOMIZE = "randomize";
 
-    /** URL arg          */
+    /** URL arg */
     public String ARG_DELETEALL = "deleteall";
 
-    /** URL arg          */
+    /** URL arg */
     public String ARG_TESTNOTIFICATIONS = "testnotifications";
 
-    /** URL arg          */
+    /** URL arg */
     public String ARG_DELETETIMESERIES = "deletetimeseries";
 
-    /** URL arg          */
+    /** URL arg */
     public String ARG_DELETE_ENTRY = "deleteentry";
 
     /** property id */
@@ -96,11 +99,11 @@ public interface RdxConstants {
     /** defaults for wiki properties */
     public String DEFAULT_COLORSTEPS = "15,60,720";
 
-    /** defaults for wiki properties          */
+    /** defaults for wiki properties */
     public String DEFAULT_COLORTABLELABELS =
         "0-15 minutes,15-60 minutes,1-12 hours,>12 hours";
 
-    /** html space    */
+    /** html space */
     public String SPACE = "&nbsp;&nbsp;";
 
 

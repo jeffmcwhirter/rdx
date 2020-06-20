@@ -117,7 +117,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     /** wiki attribute */
     public static List<Integer> colorSteps;
 
-    /** Flag for singleton   */
+    /** Flag for singleton */
     private static boolean haveCreatedApiHandler;
 
     /**
@@ -189,7 +189,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         notificationCountSms =
             getRepository().getProperty("rdx.notification.count.sms", 4);
 
-
         messageSubject =
             getRepository().getProperty("rdx.notification.email.subject",
                                         "Instrument status: ${id}");
@@ -212,6 +211,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         //Do we store the instrument status as a time series
         storeInstrumentStatus =
             getRepository().getProperty(PROP_INSTRUMENT_LOG, true);
+
         //If so, how often do we store
         storeInterval =
             getRepository().getProperty(PROP_INSTRUMENT_LOG_INTERVAL, 60 * 6);
@@ -227,15 +227,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         Misc.run(new Runnable() {
             public void run() {
-                //TODO
-                try {
-                    //                Misc.sleepSeconds(2);
-                    //              getRepository().getMailManager().sendTextMessage(null, "","hello");
-                    //              getRepository().getMailManager().sendTextMessage(null, "3038982413","hello");                   
-                } catch (Exception exc) {
-                    System.err.println("ERR:"
-                                       + LogUtil.getInnerException(exc));
-                }
                 Misc.sleepSeconds(delayToStart);
                 runCheckInstruments();
             }
@@ -248,10 +239,10 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         });
 
         if (false) {
-	    //This generates the RdxNotifications and RdxInstrumentLog database beans if needed
-            getDatabaseManager().generateBeans(
-                "com.radiometrics.plugin",
-                "(rdx_notifications|rdx_instrument_log)");
+            //This generates the RdxNotifications and RdxInstrumentLog database beans if needed
+            getDatabaseManager().generateBeans("com.radiometrics.plugin",
+                    Utils.makeHashtable(),
+                    "(rdx_notifications|rdx_instrument_log)");
         }
 
     }
@@ -279,6 +270,42 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     }
 
 
+    /**
+     * Are we running in test mode
+     *
+     * @return running in test mode
+     */
+    public boolean getTestMode() {
+        return getRepository().getProperty(PROP_TEST, false);
+    }
+
+
+    /**
+     * Utility to log messages and errors
+     *
+     * @param msg The message
+     */
+    private void log(String msg) {
+        String line = formatDate(new Date()) + " -- " + msg;
+        if (log.size() > LOG_SIZE) {
+            log.remove(0);
+        }
+        log.add(line);
+        System.err.println("RDX: " + line);
+    }
+
+    /**
+     * Log the message. If sb is non-null then append the message. Used for testing
+     *
+     * @param sb buffer to append to
+     * @param msg the message
+     */
+    private void log(StringBuilder sb, String msg) {
+        if (sb != null) {
+            sb.append(msg + "\n");
+        }
+        log(msg);
+    }
 
     /**
      * Format the date and return a HTML div with appropriate background color
@@ -309,15 +336,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         return sdf.format(d);
     }
 
-    /**
-     * Are we running in test mode
-     *
-     * @return running in test mode
-     */
-    public boolean getTestMode() {
-        return getRepository().getProperty(PROP_TEST, false);
-    }
-
 
     /**
      * Make the full path RAMADDA url
@@ -331,32 +349,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     }
 
 
-    /**
-     * Utility to log messages and errors
-     *
-     * @param msg The message
-     */
-    private void log(String msg) {
-        String line = formatDate(new Date()) + " -- " + msg;
-        if (log.size() > LOG_SIZE) {
-            log.remove(0);
-        }
-        log.add(line);
-        System.err.println("RDX: " + line);
-    }
-
-    /**
-     * Log the message. If sb is non-null then append the message. Used for testing
-     *
-     * @param sb buffer to append to
-     * @param msg the message
-     */
-    private void log(StringBuilder sb, String msg) {
-        if (sb != null) {
-            sb.append(msg + "\n");
-        }
-        log(msg);
-    }
 
     /**
      * Check the instrument status
@@ -664,8 +656,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                              getRepository().URL_ENTRY_SHOW, entry));
         String stopUrl = tmpRequest.getAbsoluteUrl(
                              HtmlUtils.url(
-                                 fullPath(PATH_NOTIFICATIONS), ARG_DELETE_ENTRY,
-                                 entry.getId()));
+                                 fullPath(PATH_NOTIFICATIONS),
+                                 ARG_DELETE_ENTRY, entry.getId()));
 
         String instrumentId = (String) entry.getValue(
                                   RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID);
@@ -834,7 +826,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     private boolean addHeader(Request request, Appendable sb, String path)
             throws Exception {
 
-        request.put("template", "radiometrics");
+        request.put(ARG_TEMPLATE, TEMPLATE_RADIOMETRICS);
         sb.append(HtmlUtils.sectionOpen(null, false));
         String on =
             HtmlUtils.style(
@@ -951,7 +943,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         return true;
 
     }
-
 
 
     /**
@@ -1094,7 +1085,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         }
 
 
-        String id = request.getString("instrument_id");
         if (instruments.size() > 0) {
             sb.append(
                 "<table class='stripe ramadda-table' table-ordering=true>");
@@ -1167,41 +1157,24 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     public Result processSettings(Request request) throws Exception {
         String        title = TITLE + " - Settings";
         StringBuilder sb    = new StringBuilder();
-        if ( !addHeader(request, sb, PATH_SETTINGS)) {
-            return new Result(title, sb);
-        }
+        addHeader(request, sb, PATH_SETTINGS);
         sb.append(HtmlUtils.formTable());
-        sb.append(HtmlUtils.formEntry("Monitoring:", monitorInstruments
+        HtmlUtils.formEntries(sb, "Monitoring:", monitorInstruments
                 ? "On"
-                : "Off"));
-        sb.append(HtmlUtils.formEntry("RDX DB scan interval:",
-                                      instrumentInterval + " minutes"));
-        sb.append(HtmlUtils.formEntry("Network threshold:",
-                                      networkThreshold + " minutes"));
-        sb.append(HtmlUtils.formEntry("Data threshold:",
-                                      dataThreshold + " minutes"));
-        sb.append(HtmlUtils.formEntry("LDM threshold:",
-                                      ldmThreshold + " minutes"));
-        sb.append(HtmlUtils.formEntry("Email enabled:",
-                                      getMailManager().isEmailEnabled()
-                                      ? "Yes"
-                                      : "No"));
-        sb.append(HtmlUtils.formEntry("SMS enabled:",
-                                      getMailManager().isSmsEnabled()
-                                      ? "Yes"
-                                      : "No"));
-        sb.append(HtmlUtils.formEntry("# Emails to send:",
-                                      notificationCountEmail + ""));
-        sb.append(HtmlUtils.formEntry("Interval between emails:",
-                                      notificationIntervalEmail
-                                      + " minutes"));
-        sb.append(HtmlUtils.formEntry("Interval until first SMS sent:",
-                                      notificationFirstIntervalSms
-                                      + " minutes"));
-        sb.append(HtmlUtils.formEntry("Interval between SMS messages:",
-                                      notificationIntervalSms + " minutes"));
-        sb.append(HtmlUtils.formEntry("# SMS messages to send:",
-                                      notificationCountSms + ""));
+                : "Off", "RDX DB scan interval:",
+                         instrumentInterval + " minutes",
+                         "Network threshold:", networkThreshold + " minutes",
+                         "Data threshold:", dataThreshold + " minutes",
+                         "LDM threshold:", ldmThreshold + " minutes",
+                         "Email enabled:", getMailManager().isEmailEnabled()
+                                           ? "Yes"
+                                           : "No", "SMS enabled:",
+                                           getMailManager().isSmsEnabled()
+                                           ? "Yes"
+                                           : "No", "# Emails to send:", notificationCountEmail, "Interval between emails:", notificationIntervalEmail
+                                           + " minutes", "Interval until first SMS sent:", notificationFirstIntervalSms
+                                               + " minutes", "Interval between SMS messages:", notificationIntervalSms
+                                                   + " minutes", "# SMS messages to send:", notificationCountSms);
         sb.append(HtmlUtils.formTableClose());
         sb.append(HtmlUtils.sectionClose());
 
@@ -1262,7 +1235,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             throws Exception {
         //Find the station entries
         Request tmpRequest = getRepository().getTmpRequest();
-        tmpRequest.put("type", instrument.typeId);
+        tmpRequest.put(ARG_TYPE, instrument.typeId);
         String id = instrument.siteId;
         tmpRequest.put("search.rdx_instrument.instrument_id", id);
         List[]      result  = getEntryManager().getEntries(tmpRequest);
@@ -1472,7 +1445,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * @param msg the message
      * @param subject email subject
      *
-     *
      * @return how many messages were sent
      * @throws Exception On badness
      */
@@ -1631,7 +1603,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * @version        $version$, Sat, May 23, '20
      * @author         Enter your name here...
      */
-    public static class InstrumentData {
+    private static class InstrumentData {
 
         /** db table name */
         public static final String TABLE = "rdx_test_instrument_data";
