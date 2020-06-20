@@ -50,6 +50,11 @@ e.g. for running with Postgres on the same machine as RAMADDA use:
 rdx.db.url=jdbc:postgresql://localhost/repository?UseServerSidePrepare=1&Protocol=-1
 </pre>
 
+Note: There is only one place in the code that hard codes values that correspond to the database. The method:
+<pre>
+RdxApiHandler.getRamaddaType(int rdxType)
+</pre>
+maps the integer instrument types from the external RDX database to the internal RAMADDA String type entry identifiers.
 
 You can run RAMADDA-RDX in test mode by setting the below property. This uses an internal test schema that mimics Radiometrics instrument status database.
 <pre>
