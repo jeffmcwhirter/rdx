@@ -24,86 +24,86 @@ import java.util.Date;
  * Class description
  *
  *
- * @author         Enter your name here...    
+ * @author         Enter your name here...
  */
 public class RdxNotifications extends DbObject {
 
-    /** _more_          */
+    /** _more_ */
     public static final String DB_TABLE_NAME = "rdx_notifications";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_ENTRY_ID = DB_TABLE_NAME + ".entry_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_ENTRY_ID = "entry_id";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_START_DATE = DB_TABLE_NAME + ".start_date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_START_DATE = "start_date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_LAST_MESSAGE_DATE = DB_TABLE_NAME
                                                        + ".last_message_date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_LAST_MESSAGE_DATE =
         "last_message_date";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_SEND_TO = DB_TABLE_NAME + ".send_to";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_SEND_TO = "send_to";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NUMBER_EMAILS = DB_TABLE_NAME
                                                    + ".number_emails";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_NUMBER_EMAILS = "number_emails";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NUMBER_SMS = DB_TABLE_NAME + ".number_sms";
 
-    /** _more_          */
+    /** _more_ */
     public static final String COL_NODOT_NUMBER_SMS = "number_sms";
 
-    /** _more_          */
+    /** _more_ */
     public static final String[] ARRAY = new String[] {
         COL_ENTRY_ID, COL_START_DATE, COL_LAST_MESSAGE_DATE, COL_SEND_TO,
         COL_NUMBER_EMAILS, COL_NUMBER_SMS
     };
 
-    /** _more_          */
+    /** _more_ */
     public static final String COLUMNS = SqlUtil.comma(ARRAY);
 
-    /** _more_          */
+    /** _more_ */
     public static final String NODOT_COLUMNS = SqlUtil.commaNoDot(ARRAY);
 
-    /** _more_          */
+    /** _more_ */
     public static final String INSERT =
         SqlUtil.makeInsert(DB_TABLE_NAME, NODOT_COLUMNS,
                            SqlUtil.getQuestionMarks(ARRAY.length));
 
 
-    /** _more_          */
+    /** _more_ */
     private String entry_id;
 
-    /** _more_          */
+    /** _more_ */
     private Date start_date;
 
-    /** _more_          */
+    /** _more_ */
     private Date last_message_date;
 
-    /** _more_          */
+    /** _more_ */
     private String send_to;
 
-    /** _more_          */
+    /** _more_ */
     private int number_emails;
 
-    /** _more_          */
+    /** _more_ */
     private int number_sms;
 
 

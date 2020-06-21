@@ -38,7 +38,10 @@ public interface RdxConstants {
 
 
     /** property id */
-    public String PROP_RUN = "rdx.monitor.run";
+    public String PROP_MONITOR_INSTRUMENTS = "rdx.monitor.instruments";
+
+    /** property id */
+    public String PROP_MONITOR_NOTIFICATIONS = "rdx.monitor.notifications";
 
     /** URL arg */
     public String ARG_RANDOMIZE = "randomize";

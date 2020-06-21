@@ -53,8 +53,11 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     /** Last status of the notifications monitor */
     private String notificationsMonitorStatus;
 
-    /** are we currently running the monitoring */
+    /** are we currently running the instrument monitoring */
     private boolean monitorInstruments;
+
+    /** are we currently running the notifications monitoring */
+    private boolean monitorNotifications;
 
     /** threshold in minutes for notifications of network times */
     private int networkThreshold;
@@ -206,7 +209,12 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
 
         //Are we monitoring instruments
-        monitorInstruments = getRepository().getProperty(PROP_RUN, true);
+        monitorInstruments =
+            getRepository().getProperty(PROP_MONITOR_INSTRUMENTS, true);
+
+        //Are we monitoring notifications
+        monitorNotifications =
+            getRepository().getProperty(PROP_MONITOR_NOTIFICATIONS, true);
 
         //Do we store the instrument status as a time series
         storeInstrumentStatus =
@@ -315,9 +323,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * @return html with background color
      */
     private String displayDate(Date d) {
-        return HtmlUtils.div(formatDate(d),
-                             HtmlUtils.style("background:" + getColor(d)
-                                             + ";"));
+        return HU.div(formatDate(d),
+                      HU.style("background:" + getColor(d) + ";"));
     }
 
 
@@ -390,7 +397,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         int errorCount = 0;
         while (true) {
             try {
-                if (monitorInstruments) {
+                if (monitorNotifications) {
                     notificationsMonitorStatus =
                         "Last ran notifications monitor at "
                         + formatDate(new Date());
@@ -654,10 +661,10 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         String url = tmpRequest.getAbsoluteUrl(
                          tmpRequest.entryUrl(
                              getRepository().URL_ENTRY_SHOW, entry));
-        String stopUrl = tmpRequest.getAbsoluteUrl(
-                             HtmlUtils.url(
-                                 fullPath(PATH_NOTIFICATIONS),
-                                 ARG_DELETE_ENTRY, entry.getId()));
+        String stopUrl =
+            tmpRequest.getAbsoluteUrl(HU.url(fullPath(PATH_NOTIFICATIONS),
+                                             ARG_DELETE_ENTRY,
+                                             entry.getId()));
 
         String instrumentId = (String) entry.getValue(
                                   RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID);
@@ -827,115 +834,103 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             throws Exception {
 
         request.put(ARG_TEMPLATE, TEMPLATE_RADIOMETRICS);
-        sb.append(HtmlUtils.sectionOpen(null, false));
+        sb.append(HU.sectionOpen(null, false));
         String on =
-            HtmlUtils.style(
+            HU.style(
                 "display:inline-block;background:#eee; font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
         String off =
-            HtmlUtils.style(
+            HU.style(
                 "display:inline-block;font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
 
         String notifications = path.equals(PATH_NOTIFICATIONS)
-                               ? HtmlUtils.div("Notifications", on)
-                               : HtmlUtils.href(fullPath(PATH_NOTIFICATIONS),
-                                   "Notifications", off);
+                               ? HU.div("Notifications", on)
+                               : HU.href(fullPath(PATH_NOTIFICATIONS),
+                                         "Notifications", off);
         String instruments = path.equals(PATH_INSTRUMENTS)
-                             ? HtmlUtils.div("Instruments", on)
-                             : HtmlUtils.href(fullPath(PATH_INSTRUMENTS),
-                                 "Instruments", off);
+                             ? HU.div("Instruments", on)
+                             : HU.href(fullPath(PATH_INSTRUMENTS),
+                                       "Instruments", off);
         String settings = path.equals(PATH_SETTINGS)
-                          ? HtmlUtils.div("Settings", on)
-                          : HtmlUtils.href(fullPath(PATH_SETTINGS),
-                                           "Settings", off);
-        String log = path.equals(PATH_LOG)
-                     ? HtmlUtils.div("Log", on)
-                     : HtmlUtils.href(fullPath(PATH_LOG), "Log", off);
+                          ? HU.div("Settings", on)
+                          : HU.href(fullPath(PATH_SETTINGS), "Settings", off);
+        String log      = path.equals(PATH_LOG)
+                          ? HU.div("Log", on)
+                          : HU.href(fullPath(PATH_LOG), "Log", off);
 
-        String sep = SPACE + "|" + SPACE;
-        HtmlUtils.sectionTitle(sb, "");
-        HtmlUtils.center(sb,
-                         instruments + sep + notifications + sep + settings
-                         + sep + log);
+        String sep      = SPACE + "|" + SPACE;
+        HU.sectionTitle(sb, "");
+        HU.center(sb,
+                  instruments + sep + notifications + sep + settings + sep
+                  + log);
 
         if (getTestMode()) {
             String link = !request.isAdmin()
                           ? ""
-                          : HtmlUtils
-                              .button(HtmlUtils
-                                  .href(HtmlUtils
-                                      .url(fullPath(PATH_CHANGEINSTRUMENTS),
-                                          ARG_RANDOMIZE,
-                                          "true"), "Randomize timestamps")) + HtmlUtils
-                                              .space(2) + HtmlUtils
-                                              .button(HtmlUtils
-                                                  .href(HtmlUtils
-                                                      .url(fullPath(PATH_CHANGEINSTRUMENTS),
-                                                          ARG_RANDOMIZE,
-                                                          "false"), "Update timestamps"));
-            HtmlUtils.center(sb,
-                             messageNote("Running in test mode. " + SPACE
-                                         + link));
+                          : HU
+                          .button(HU
+                              .href(HU
+                                  .url(fullPath(PATH_CHANGEINSTRUMENTS),
+                                      ARG_RANDOMIZE,
+                                      "true"), "Randomize timestamps")) + HU
+                                          .space(2) + HU
+                                          .button(HU
+                                              .href(HU
+                                                  .url(fullPath(PATH_CHANGEINSTRUMENTS),
+                                                      ARG_RANDOMIZE,
+                                                      "false"), "Update timestamps"));
+            HU.center(sb,
+                      messageNote("Running in test mode. " + SPACE + link));
         }
 
         if (request.isAdmin()) {
-            if (request.defined(PROP_RUN)) {
-                monitorInstruments = request.get(PROP_RUN, true);
-                getRepository().writeGlobal(PROP_RUN,
+            if (request.defined(PROP_MONITOR_INSTRUMENTS)) {
+                monitorInstruments = request.get(PROP_MONITOR_INSTRUMENTS,
+                        true);
+                getRepository().writeGlobal(PROP_MONITOR_INSTRUMENTS,
                                             "" + monitorInstruments);
             }
-            String fullPath = getRepository().getUrlBase() + path;
-            String link =
-                HtmlUtils.button(HtmlUtils.href(HtmlUtils.url(fullPath,
-                    PROP_RUN, monitorInstruments
-                              ? "false"
-                              : "true"), monitorInstruments
-                                         ? "Turn off monitoring"
-                                         : "Turn on monitoring"));
-
-            link += SPACE
-                    + HtmlUtils.button(HtmlUtils.href(HtmlUtils.url(fullPath,
-                        ARG_DELETETIMESERIES,
-                        "true"), "Delete logged time series"));
-
-            if (getTestMode()) {
-                String test = HtmlUtils.button(
-                                  HtmlUtils.href(
-                                      HtmlUtils.url(
-                                          fullPath(PATH_NOTIFICATIONS),
-                                          ARG_TESTNOTIFICATIONS,
-                                          "true"), "Test notifications"));
-                link += SPACE;
-                link += test;
+            if (request.defined(PROP_MONITOR_NOTIFICATIONS)) {
+                monitorNotifications =
+                    request.get(PROP_MONITOR_NOTIFICATIONS, true);
+                getRepository().writeGlobal(PROP_MONITOR_NOTIFICATIONS,
+                                            "" + monitorNotifications);
             }
-            HtmlUtils.center(sb, link);
-            sb.append("<br>");
+            addSettingsButtons(request, sb, path);
+            String fullPath = getRepository().getUrlBase() + path;
             if (request.get(ARG_DELETETIMESERIES, false)) {
                 if (request.get(ARG_OK, false)) {
                     getDatabaseManager().delete(
                         RdxInstrumentLog.DB_TABLE_NAME, null);
-                    HtmlUtils.center(
-                        sb, messageNote("Ok, all time series are deleted"));
+                    HU.center(sb,
+                              messageNote("Ok, all time series are deleted"));
                 } else {
-                    HtmlUtils.center(
+                    HU.center(
                         sb,
                         messageQuestion(
                             "Are you sure you want to delete all stored time series logs?",
-                            HtmlUtils.button(
-                                HtmlUtils.href(
-                                    HtmlUtils.url(
-                                        fullPath, ARG_DELETETIMESERIES,
-                                        "true", ARG_OK,
-                                        "true"), "Yes")) + SPACE
-                                            + HtmlUtils.button(
-                                                HtmlUtils.href(
-                                                    fullPath, "Cancel"))));
+                            HU.button(
+                                HU.href(
+                                    HU.url(fullPath, ARG_DELETETIMESERIES,
+                                           "true", ARG_OK,
+                                           "true"), "Yes")) + SPACE
+                                               + HU.button(
+                                                   HU.href(
+                                                       fullPath, "Cancel"))));
 
                     return false;
                 }
             }
         } else {
+            String msg = "";
             if ( !monitorInstruments) {
-                HtmlUtils.center(sb, "Not currently monitoring instruments");
+                msg += "Not currently monitoring instruments.";
+                msg += SPACE;
+            }
+            if ( !monitorNotifications) {
+                msg += "Not currently monitoring notifications.";
+            }
+            if (msg.length() > 0) {
+                HU.center(sb, msg);
                 sb.append("<br>");
             }
         }
@@ -944,6 +939,55 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
     }
 
+
+    /**
+     * Add the buttons
+     *
+     * @param request The request
+     * @param sb buffer to append to
+     * @param path url path
+     *
+     * @throws Exception On badness
+     */
+    private void addSettingsButtons(Request request, Appendable sb,
+                                    String path)
+            throws Exception {
+        String fullPath = getRepository().getUrlBase() + path;
+        String link = HU.button(HU.href(HU.url(fullPath,
+                          PROP_MONITOR_INSTRUMENTS, monitorInstruments
+                ? "false"
+                : "true"), monitorInstruments
+                           ? "Turn off instrument monitoring"
+                           : "Turn on instrument monitoring", HU.title(
+                               "Turn on/off monitoring of instrument status database")));
+
+        link += SPACE;
+
+        link += HU.button(HU.href(HU.url(fullPath,
+                                         PROP_MONITOR_NOTIFICATIONS,
+                                         monitorNotifications
+                                         ? "false"
+                                         : "true"), monitorNotifications
+                ? "Turn off notification monitoring"
+                : "Turn on notification monitoring", HU.title(
+                    "Turn on/off monitoring and sending notifications")));
+
+        link += SPACE;
+        link +=
+            HU.button(HU.href(HU.url(fullPath, ARG_DELETETIMESERIES, "true"),
+                              "Delete logged time series"));
+
+        if (getTestMode()) {
+            String test =
+                HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
+                                         ARG_TESTNOTIFICATIONS,
+                                         "true"), "Test notifications"));
+            link += SPACE;
+            link += test;
+        }
+        HU.center(sb, link);
+        sb.append("<br>");
+    }
 
     /**
      * Process the /notifications request
@@ -964,9 +1008,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         if (request.isAdmin()) {
             if (request.get(ARG_DELETEALL, false)) {
                 deleteNotification(null);
-                HtmlUtils.center(sb,
-                                 messageNote("All notifications deleted"));
-                sb.append(HtmlUtils.sectionClose());
+                HU.center(sb, messageNote("All notifications deleted"));
+                sb.append(HU.sectionClose());
 
                 return new Result(title, sb);
             }
@@ -975,7 +1018,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 StringBuilder logSB = new StringBuilder();
                 checkNotifications(logSB, true);
                 sb.append("Test notifications:");
-                sb.append(HtmlUtils.pre(logSB.toString().trim()));
+                sb.append(HU.pre(logSB.toString().trim()));
             }
 
 
@@ -984,17 +1027,15 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                                   request.getString(ARG_DELETE_ENTRY));
                 if (entry != null) {
                     deleteNotification(entry);
-                    HtmlUtils.center(
-                        sb,
-                        messageNote(
-                            "Notification for instrument: " + entry.getName()
-                            + " deleted"));
+                    HU.center(sb,
+                              messageNote("Notification for instrument: "
+                                          + entry.getName() + " deleted"));
                 }
             }
         }
         List<RdxNotifications> notifications = getNotifications(null);
         if (notifications.size() == 0) {
-            HtmlUtils.center(sb, messageNote("No pending notifications"));
+            HU.center(sb, messageNote("No pending notifications"));
         }
 
         boolean admin = request.isAdmin();
@@ -1003,21 +1044,18 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 "<table class='stripe ramadda-table' table-ordering=true>");
             String deleteAllLink = !admin
                                    ? ""
-                                   : HtmlUtils
-                                       .href(HtmlUtils
-                                           .url(fullPath(PATH_NOTIFICATIONS),
-                                               ARG_DELETEALL,
-                                               "true"), HtmlUtils
-                                                   .getIconImage("fa-trash",
-                                                       "title",
-                                                       "Delete all notifications"));
+                                   : HU
+                                   .href(HU
+                                       .url(fullPath(PATH_NOTIFICATIONS),
+                                           ARG_DELETEALL, "true"), HU
+                                               .getIconImage("fa-trash",
+                                                   "title",
+                                                   "Delete all notifications"));
 
-            HtmlUtils.thead(sb, deleteAllLink, HtmlUtils.b("Instrument"),
-                            HtmlUtils.b("Start Date"),
-                            HtmlUtils.b("Last Message Sent"),
-                            HtmlUtils.b("To"),
-                            HtmlUtils.b("Number emails sent"),
-                            HtmlUtils.b("Number texts sent"));
+            HU.thead(sb, deleteAllLink, HU.b("Instrument"),
+                     HU.b("Start Date"), HU.b("Last Message Sent"),
+                     HU.b("To"), HU.b("Number emails sent"),
+                     HU.b("Number texts sent"));
             sb.append("<tbody>");
             String path = fullPath(PATH_NOTIFICATIONS);
             for (RdxNotifications notification : notifications) {
@@ -1028,19 +1066,18 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 }
                 String deleteLink = !admin
                                     ? ""
-                                    : HtmlUtils
-                                        .href(HtmlUtils
-                                            .url(path, ARG_DELETE_ENTRY,
-                                                entry.getId()), HtmlUtils
-                                                    .getIconImage("fa-trash",
-                                                        "title",
-                                                        "Delete notification"));
+                                    : HU
+                                    .href(HU
+                                        .url(path, ARG_DELETE_ENTRY,
+                                             entry.getId()), HU
+                                                 .getIconImage("fa-trash",
+                                                     "title",
+                                                     "Delete notification"));
                 String entryUrl = getEntryManager().getEntryUrl(null, entry);
                 String to       = notification.getSendTo().trim();
                 to = to.replaceAll("\n", "<br>");
-                sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] {
-                    deleteLink + " ",
-                    HtmlUtils.href(entryUrl, entry.getName()),
+                sb.append(HU.row(HU.cols(new Object[] {
+                    deleteLink + " ", HU.href(entryUrl, entry.getName()),
                     formatDate(notification.getStartDate()),
                     formatDate(notification.getLastMessageDate()), to,
                     notification.getNumberEmails(),
@@ -1049,7 +1086,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             }
             sb.append("</tbody></table>");
         }
-        sb.append(HtmlUtils.sectionClose());
+        sb.append(HU.sectionClose());
 
         return new Result(title, sb);
     }
@@ -1075,7 +1112,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
             if ( !test) {
-                HtmlUtils.center(
+                HU.center(
                     sb,
                     messageWarning(
                         "Failed to read instruments<br>Perhaps the external instrument database is not configured?"));
@@ -1088,20 +1125,18 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         if (instruments.size() > 0) {
             sb.append(
                 "<table class='stripe ramadda-table' table-ordering=true>");
-            HtmlUtils.thead(sb, "Site ID", "Instrument ID",
-                            "Last Network Connection", "Last Data",
-                            "Last LDM");
+            HU.thead(sb, "Site ID", "Instrument ID",
+                     "Last Network Connection", "Last Data", "Last LDM");
             sb.append("<tbody>");
             for (InstrumentData instrument : instruments) {
                 Entry  entry = getInstrumentEntry(instrument);
                 String label = instrument.siteId;
                 if (entry != null) {
-                    label =
-                        HtmlUtils.href(getEntryManager().getEntryUrl(null,
+                    label = HU.href(getEntryManager().getEntryUrl(null,
                             entry), label);
                 }
-                sb.append(HtmlUtils.row(HtmlUtils.cols(new Object[] { label,
-                        instrument.id, displayDate(instrument.network),
+                sb.append(HU.row(HU.cols(new Object[] { label, instrument.id,
+                        displayDate(instrument.network),
                         displayDate(instrument.data),
                         displayDate(instrument.ldm) })));
             }
@@ -1109,7 +1144,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         } else {
             sb.append("No instruments found");
         }
-        sb.append(HtmlUtils.sectionClose());
+        sb.append(HU.sectionClose());
 
         return new Result(title, sb);
     }
@@ -1139,8 +1174,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                       + notificationsMonitorStatus);
             sb.append("<br>");
         }
-        sb.append(HtmlUtils.pre(Utils.join(log, "\n", true)));
-        sb.append(HtmlUtils.sectionClose());
+        sb.append(HU.pre(Utils.join(log, "\n", true)));
+        sb.append(HU.sectionClose());
 
         return new Result(title, sb);
     }
@@ -1157,9 +1192,13 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     public Result processSettings(Request request) throws Exception {
         String        title = TITLE + " - Settings";
         StringBuilder sb    = new StringBuilder();
-        addHeader(request, sb, PATH_SETTINGS);
-        sb.append(HtmlUtils.formTable());
-        HtmlUtils.formEntries(sb, "Monitoring:", monitorInstruments
+        if ( !addHeader(request, sb, PATH_SETTINGS)) {
+            return new Result(title, sb);
+        }
+        sb.append(HU.formTable());
+        HU.formEntries(sb, "Monitoring instruments:", monitorInstruments
+                ? "On"
+                : "Off", "Monitoring notifications:", monitorNotifications
                 ? "On"
                 : "Off", "RDX DB scan interval:",
                          instrumentInterval + " minutes",
@@ -1172,15 +1211,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                                            getMailManager().isSmsEnabled()
                                            ? "Yes"
                                            : "No", "# Emails to send:", notificationCountEmail, "Interval between emails:", notificationIntervalEmail
-                                           + " minutes", "Interval until first SMS sent:", notificationFirstIntervalSms
+                                           + " minutes", "# SMS messages to send:", notificationCountSms, "Interval until first SMS sent:", notificationFirstIntervalSms
                                                + " minutes", "Interval between SMS messages:", notificationIntervalSms
-                                                   + " minutes", "# SMS messages to send:", notificationCountSms);
-        sb.append(HtmlUtils.formTableClose());
-        sb.append(HtmlUtils.sectionClose());
+                                                   + " minutes");
+        sb.append(HU.formTableClose());
+        sb.append(HU.sectionClose());
 
         return new Result(title, sb);
     }
-
 
 
     /**
