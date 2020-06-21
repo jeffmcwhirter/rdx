@@ -88,6 +88,28 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
 
 
     /**
+     * _more_
+     *
+     * @param columnNodes _more_
+     *
+     * @throws Exception _more_
+     */
+    @Override
+    public void initColumns(List<Element> columnNodes) throws Exception {
+        super.initColumns(columnNodes);
+        Column col = findColumn("properties");
+        if (col != null) {
+            col.setEditable(false);
+        }
+        col = findColumn("numberofpoints");
+        if (col != null) {
+            col.setEditable(false);
+        }
+    }
+
+
+
+    /**
      * get the columns to be used for point json. Skip the numberofpoints and properties
      *
      * @return columns to include in point json
