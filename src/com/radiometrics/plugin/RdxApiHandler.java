@@ -895,6 +895,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 getRepository().writeGlobal(PROP_MONITOR_NOTIFICATIONS,
                                             "" + monitorNotifications);
             }
+	    sb.append("<br>");
             addSettingsButtons(request, sb, path);
             String fullPath = getRepository().getUrlBase() + path;
             if (request.get(ARG_DELETETIMESERIES, false)) {
@@ -1234,18 +1235,21 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             return;
         }
 
-        boolean store = false;
+        boolean storeTimeSeries = false;
         Date    now   = new Date();
+	//Check to see if we should store the time series values
         if (timeSinceLastInstrumentStore != null) {
             int elapsedTime =
                 (int) (now.getTime()
                        - timeSinceLastInstrumentStore.getTime()) / 1000 / 60;
-            store = elapsedTime > storeInterval;
+            storeTimeSeries = elapsedTime > storeInterval;
         }
 
+	test = test||getTestMode();
         boolean addNotification = true;
         for (InstrumentData instrument : instruments) {
-            checkInstrument(instrument, store, addNotification);
+            checkInstrument(instrument, storeTimeSeries, addNotification);
+	    //If we are in test mode then stop adding notifications once we've added one
             if (test && addNotification) {
                 List<RdxNotifications> notifications = getNotifications(null);
                 if (notifications.size() > 0) {
@@ -1253,7 +1257,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 }
             }
         }
-        if (store) {
+	//Keep track of last time we stored
+        if (storeTimeSeries) {
             timeSinceLastInstrumentStore = now;
         }
     }
