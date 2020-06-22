@@ -83,7 +83,7 @@ colorTableShowRange=false
 metadata
 note: If these are changed then also change the IDX_ attributes in RdxInstrumentTypeHandler.java
 -->
-     <column name="instrument_id" type="string"  label="ID"   cansearch="true"  />
+     <column name="instrument_id" type="string"  label="Instrument ID"   cansearch="true"  />
      <column name="contact_name" type="string"  label="Contact"   />
      <column name="contact_email" type="email"  label="Contact Email"   />
      <column name="city" type="enumerationplus"  label="City"   />

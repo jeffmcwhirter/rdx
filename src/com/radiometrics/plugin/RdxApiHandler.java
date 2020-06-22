@@ -599,20 +599,20 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             return false;
         }
 
-
         //Are we ready to send the notification
         int     numberEmails = notification.getNumberEmails();
         int     numberSms    = notification.getNumberSms();
         boolean sendSms      = false;
-
         boolean shouldSend   = false;
+
         //Check for first time
-        if ((numberEmails == 0) && (notificationCountEmail > 0)) {
-            shouldSend = true;
-        }
-        if ( !shouldSend && (numberSms == 0) && (notificationCountSms > 0)) {
-            shouldSend = true;
-            sendSms    = true;
+        if ((numberEmails == 0) && (numberSms == 0)) {
+            if (notificationCountEmail > 0) {
+                shouldSend = true;
+            } else if (notificationCountSms > 0) {
+                shouldSend = true;
+                sendSms    = true;
+            }
         }
 
         //If not first time then check if we're scheduled to send
@@ -644,9 +644,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             //Check the time
             long elapsedMinutes = getElapsedMinutes(now, lastMessageDate);
             shouldSend = elapsedMinutes >= interval;
-            log(logSB,
-                "Elapsed minutes:" + elapsedMinutes + " interval:" + interval
-                + " should send:" + shouldSend);
+            //log(logSB,  "Elapsed minutes:" + elapsedMinutes + " interval:" + interval + " should send:" + shouldSend);
         }
 
 
@@ -695,7 +693,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         }
         StringBuilder to      = new StringBuilder();
         String        subject = messageSubject.replace("${id}", instrumentId);
-
+        boolean       sentOne = false;
         try {
             int cnt = sendNotification(tmpRequest, entry, logSB, to, sendSms,
                                        msg, subject);
@@ -703,31 +701,30 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 log(logSB,
                     "No messages sent for site:" + entry.getName()
                     + " sendSms:" + sendSms);
-
-                return false;
+            } else {
+                if (sendSms) {
+                    notification.setNumberSms(notification.getNumberSms()
+                            + 1);
+                } else {
+                    notification.setNumberEmails(
+                        notification.getNumberEmails() + 1);
+                }
+                log(logSB, (sendSms
+                            ? "SMS Notification sent:"
+                            : "Email notification sent:") + instrumentId
+                            + " #emails:" + notification.getNumberEmails()
+                            + " #sms:" + notification.getNumberSms());
+                sentOne = true;
             }
+            notification.setSendTo(to.toString());
         } catch (Exception exc) {
             Throwable thr = LogUtil.getInnerException(exc);
             notification.setSendTo("Error:" + thr.getMessage());
-            updateNotification(notification, now);
-
-            return false;
+            thr.printStackTrace();
         }
-        //Update the db
-        if (sendSms) {
-            notification.setNumberSms(notification.getNumberSms() + 1);
-        } else {
-            notification.setNumberEmails(notification.getNumberEmails() + 1);
-        }
-        log(logSB,
-            "Notification sent:" + instrumentId + " emails:"
-            + notification.getNumberEmails() + " "
-            + notification.getNumberSms());
-
-        notification.setSendTo(to.toString());
         updateNotification(notification, now);
 
-        return true;
+        return sentOne;
 
     }
 
@@ -842,22 +839,25 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             HU.style(
                 "display:inline-block;font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
 
-        String notifications = path.equals(PATH_NOTIFICATIONS)
-                               ? HU.div("Notifications", on)
-                               : HU.href(fullPath(PATH_NOTIFICATIONS),
-                                         "Notifications", off);
-        String instruments = path.equals(PATH_INSTRUMENTS)
-                             ? HU.div("Instruments", on)
-                             : HU.href(fullPath(PATH_INSTRUMENTS),
-                                       "Instruments", off);
-        String settings = path.equals(PATH_SETTINGS)
-                          ? HU.div("Settings", on)
-                          : HU.href(fullPath(PATH_SETTINGS), "Settings", off);
-        String log      = path.equals(PATH_LOG)
-                          ? HU.div("Log", on)
-                          : HU.href(fullPath(PATH_LOG), "Log", off);
+        String notifications = HU.href(fullPath(PATH_NOTIFICATIONS),
+                                       "Notifications",
+                                       path.equals(PATH_NOTIFICATIONS)
+                                       ? on
+                                       : off);
+        String instruments = HU.href(fullPath(PATH_INSTRUMENTS),
+                                     "Instruments",
+                                     path.equals(PATH_INSTRUMENTS)
+                                     ? on
+                                     : off);
+        String settings = HU.href(fullPath(PATH_SETTINGS), "Settings",
+                                  path.equals(PATH_SETTINGS)
+                                  ? on
+                                  : off);
+        String log = HU.href(fullPath(PATH_LOG), "Log", path.equals(PATH_LOG)
+                ? on
+                : off);
 
-        String sep      = SPACE + "|" + SPACE;
+        String sep = SPACE + "|" + SPACE;
         HU.sectionTitle(sb, "");
         HU.center(sb,
                   instruments + sep + notifications + sep + settings + sep
@@ -1053,9 +1053,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                                                    "Delete all notifications"));
 
             HU.thead(sb, deleteAllLink, HU.b("Instrument"),
-                     HU.b("Start Date"), HU.b("Last Message Sent"),
-                     HU.b("To"), HU.b("Number emails sent"),
-                     HU.b("Number texts sent"));
+                     HU.b("Start Date"), HU.b("Last Event"), HU.b("To"),
+                     HU.b("Number emails sent"), HU.b("Number texts sent"));
             sb.append("<tbody>");
             String path = fullPath(PATH_NOTIFICATIONS);
             for (RdxNotifications notification : notifications) {
@@ -1080,8 +1079,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                     deleteLink + " ", HU.href(entryUrl, entry.getName()),
                     formatDate(notification.getStartDate()),
                     formatDate(notification.getLastMessageDate()), to,
-                    notification.getNumberEmails(),
-                    notification.getNumberSms()
+                    notification.getNumberEmails() + "/"
+                    + notificationCountEmail,
+                    notification.getNumberSms() + "/" + notificationCountSms
                 })));
             }
             sb.append("</tbody></table>");
@@ -1399,15 +1399,10 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                            instrument.ldm);
         }
 
-        //TODO: test for now
-        storeTimeseries = true;
-
         if (storeInstrumentStatus && (storeTimeseries || changed)) {
-            //            System.err.println("\tStoring instrument log");
             RdxInstrumentLogImpl.store(repository, entry);
         }
 
-        //        System.err.println("checkInstrument:" + entry + " changed:" + changed);
 
         if ( !changed) {
             //if no change then done
@@ -1491,15 +1486,12 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                                  boolean sms, String msg, String subject)
             throws Exception {
 
-        boolean testMode = logSB != null;
-        //TODO:
-        //      testMode = true;
-        //      if(testMode) return 1;
-
-        GregorianCalendar cal = new GregorianCalendar(timeZone);
+        boolean           testMode = logSB != null;
+        GregorianCalendar cal      = new GregorianCalendar(timeZone);
         cal.setTime(new Date());
         boolean weekend = (cal.get(cal.DAY_OF_WEEK) == cal.SUNDAY)
                           || (cal.get(cal.DAY_OF_WEEK) == cal.SATURDAY);
+
 
         List<Metadata> metadataList =
             getMetadataManager().findMetadata(request, entry,
@@ -1516,8 +1508,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 if (when.equals("weekdays") && weekend) {
                     continue;
                 }
-                boolean enabled = Misc.equals(metadata.getAttr(5), "true");
-                if ( !enabled) {
+                if ( !Misc.equals(metadata.getAttr(5), "true")) {
                     continue;
                 }
                 tmp.add(metadata);
@@ -1526,31 +1517,34 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         }
         if ((metadataList == null) || (metadataList.size() == 0)) {
             log(logSB, "Warning: No notifications found");
+            to.append("No notifications found\n");
 
             return 0;
         }
 
         int         cnt         = 0;
         MailManager mailManager = getRepository().getMailManager();
-        if (sms) {
-            if ( !mailManager.isSmsEnabled()) {
-                if (testMode) {
-                    cnt++;
-                }
-                to.append("sms not enabled\n");
-                log(logSB, "Warning: SMS not enabled");
+        if ( !testMode) {
+            if (sms) {
+                if ( !mailManager.isSmsEnabled()) {
+                    if (testMode) {
+                        cnt++;
+                    }
+                    log(logSB, "Warning: SMS not enabled");
+                    to.append("SMS not enabled\n");
 
-                return cnt;
-            }
-        } else {
-            if ( !mailManager.isEmailEnabled()) {
-                if (testMode) {
-                    cnt++;
+                    return cnt;
                 }
-                to.append("email not enabled\n");
-                log(logSB, "Warning: Email not enabled");
+            } else {
+                if ( !mailManager.isEmailEnabled()) {
+                    if (testMode) {
+                        cnt++;
+                    }
+                    log(logSB, "Warning: Email not enabled");
+                    to.append("email not enabled\n");
 
-                return cnt;
+                    return cnt;
+                }
             }
         }
 
@@ -1559,23 +1553,22 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             String email = Utils.trim(metadata.getAttr2());
             String phone = Utils.trim(metadata.getAttr3());
             phone = phone.replaceAll("-", "").replaceAll(" ", "");
-            log(logSB,
-                "Notification:" + name + " email: " + email + " phone: "
-                + phone);
+            //            log(logSB,  "Notification:" + name + " email: " + email + " phone: "  + phone);
 
             if (sms) {
                 if (phone.length() == 0) {
-                    to.append("no phone: " + name);
+                    to.append("no phone for: " + name + "\n");
 
                     continue;
                 }
-                log(logSB, "Sending site status sms: " + phone);
+                //                log(logSB, "Sending site status sms: " + phone);
                 if (testMode) {
+                    to.append("test SMS to: " + name + " phone: " + phone
+                              + "\n");
                     cnt++;
-                    //              to.append("test sms to: " + name +" phone: " + phone+"\n");
-                    //              continue;
-                }
 
+                    continue;
+                }
                 if (mailManager.sendTextMessage(null, phone, msg)) {
                     to.append("SMS to: " + name + " phone: " + phone + "\n");
                     cnt++;
@@ -1586,15 +1579,17 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 }
             } else {
                 if (email.length() == 0) {
-                    to.append("no email: " + name);
+                    to.append("no email for: " + name + "\n");
 
                     continue;
                 }
-                log(logSB, "Sending site status email: " + email);
+                //                log(logSB, "Sending site status email: " + email);
                 if (testMode) {
                     cnt++;
-                    //              to.append("test email to: " + name +" email: " + email+"\n");
-                    //              continue;
+                    to.append("test email to: " + name + " email: " + email
+                              + "\n");
+
+                    continue;
                 }
                 msg = msg.replaceAll("\n", "<br>");
                 mailManager.sendEmail(email, subject, msg, true);
@@ -1604,7 +1599,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         }
 
         return cnt;
-
     }
 
 

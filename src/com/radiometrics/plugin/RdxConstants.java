@@ -77,7 +77,7 @@ public interface RdxConstants {
     public String PROP_THRESHOLD_LDM = "rdx.threshold.ldm";
 
     /** property id */
-    public String PROP_INSTRUMENT_INTERVAL = "rdx.instrument.interval";
+    public String PROP_INSTRUMENT_INTERVAL = "rdx.instruments.interval";
 
     /** property id */
     public String PROP_NOTIFICATIONS_INTERVAL = "rdx.notifications.interval";
