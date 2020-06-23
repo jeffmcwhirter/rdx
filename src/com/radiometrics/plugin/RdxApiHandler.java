@@ -101,6 +101,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     /** Tracks last time we stored the instrument status in the local database */
     private Date timeSinceLastInstrumentStore;
 
+
     /** do we store instrument status time series */
     private boolean storeInstrumentStatus;
 
@@ -220,7 +221,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         storeInstrumentStatus =
             getRepository().getProperty(PROP_INSTRUMENT_LOG, true);
 
-        //If so, how often do we store
+        //If so, how often do we store time series
         storeInterval =
             getRepository().getProperty(PROP_INSTRUMENT_LOG_INTERVAL, 60 * 6);
 
@@ -252,6 +253,20 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                     Utils.makeHashtable(),
                     "(rdx_notifications|rdx_instrument_log)");
         }
+
+        String tmpTime =
+            getRepository().getProperty(PROP_INSTRUMENT_LOG_LASTTIME);
+        if (tmpTime != null) {
+            try {
+                timeSinceLastInstrumentStore = new Date(tmpTime);
+            } catch (Exception exc) {
+                System.err.println("RDX: Error getting property:"
+                                   + PROP_INSTRUMENT_LOG_LASTTIME + "="
+                                   + tmpTime + " error:" + exc);
+            }
+        }
+
+
 
     }
 
@@ -365,12 +380,10 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         while (true) {
             try {
                 if (monitorInstruments) {
-                    log("Checking instruments");
-
                     instrumentMonitorStatus =
                         "Last ran instrument monitor at "
                         + formatDate(new Date());
-                    checkInstruments(false);
+                    checkInstruments();
                     errorCount = 0;
                 }
             } catch (Exception exc) {
@@ -810,7 +823,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         if (request == null) {
             return null;
         }
-        checkInstruments(true);
+        checkInstruments();
 
         return processInstruments(request);
     }
@@ -859,9 +872,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         String sep = SPACE + "|" + SPACE;
         HU.sectionTitle(sb, "");
-        HU.center(sb,
-                  instruments + sep + notifications + sep + settings + sep
-                  + log);
+        HU.div(sb,
+               instruments + sep + notifications + sep + settings + sep
+               + log, HU.style("text-align:center;margin-bottom:8px;"));
 
         if (getTestMode()) {
             String link = !request.isAdmin()
@@ -878,8 +891,12 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                                                   .url(fullPath(PATH_CHANGEINSTRUMENTS),
                                                       ARG_RANDOMIZE,
                                                       "false"), "Update timestamps"));
-            HU.center(sb,
-                      messageNote("Running in test mode. " + SPACE + link));
+            link += SPACE;
+            link += HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
+                                             ARG_TESTNOTIFICATIONS,
+                                             "true"), "Test notifications"));
+            HU.div(sb, messageBlank("Running in test mode " + SPACE + link),
+                   HU.style("text-align:center;"));
         }
 
         if (request.isAdmin()) {
@@ -895,7 +912,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 getRepository().writeGlobal(PROP_MONITOR_NOTIFICATIONS,
                                             "" + monitorNotifications);
             }
-	    sb.append("<br>");
             addSettingsButtons(request, sb, path);
             String fullPath = getRepository().getUrlBase() + path;
             if (request.get(ARG_DELETETIMESERIES, false)) {
@@ -978,16 +994,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             HU.button(HU.href(HU.url(fullPath, ARG_DELETETIMESERIES, "true"),
                               "Delete logged time series"));
 
-        if (getTestMode()) {
-            String test =
-                HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
-                                         ARG_TESTNOTIFICATIONS,
-                                         "true"), "Test notifications"));
-            link += SPACE;
-            link += test;
-        }
-        HU.center(sb, link);
-        sb.append("<br>");
+        HU.div(sb, link, HU.style("text-align:center;margin-bottom:8px;"));
     }
 
     /**
@@ -1225,31 +1232,31 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     /**
      * Check the instruments
      *
-     *
-     * @param test test mode
      * @throws Exception on badness
      */
-    private void checkInstruments(boolean test) throws Exception {
+    private void checkInstruments() throws Exception {
         List<InstrumentData> instruments = readInstruments();
         if (instruments == null) {
             return;
         }
-
         boolean storeTimeSeries = false;
-        Date    now   = new Date();
-	//Check to see if we should store the time series values
+        Date    now             = new Date();
+        //Check to see if we should store the time series values
         if (timeSinceLastInstrumentStore != null) {
-            int elapsedTime =
-                (int) (now.getTime()
-                       - timeSinceLastInstrumentStore.getTime()) / 1000 / 60;
+            int elapsedTime = getElapsedMinutes(now,
+                                  timeSinceLastInstrumentStore);
             storeTimeSeries = elapsedTime > storeInterval;
+        } else {
+            //Always do it the first time we run
+            storeTimeSeries = true;
         }
 
-	test = test||getTestMode();
+        boolean test            = getTestMode();
         boolean addNotification = true;
+        //      log("checkInstruments test:" + test +" storeTimeSeries:" + storeTimeSeries);
         for (InstrumentData instrument : instruments) {
             checkInstrument(instrument, storeTimeSeries, addNotification);
-	    //If we are in test mode then stop adding notifications once we've added one
+            //If we are in test mode then stop adding notifications once we've added one
             if (test && addNotification) {
                 List<RdxNotifications> notifications = getNotifications(null);
                 if (notifications.size() > 0) {
@@ -1257,9 +1264,12 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 }
             }
         }
-	//Keep track of last time we stored
+        //Keep track of last time we stored
         if (storeTimeSeries) {
             timeSinceLastInstrumentStore = now;
+            getRepository().writeGlobal(
+                PROP_INSTRUMENT_LOG_LASTTIME,
+                timeSinceLastInstrumentStore.toString());
         }
     }
 
@@ -1350,14 +1360,14 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * Compare the instrument (from rdx db) to the internal RAMADDA instrument entry
      *
      * @param instrument The instrument
-     * @param storeTimeseries Force storing the instrument state
+     * @param storeTimeSeries Force storing the instrument state
      * @param addNotification Add a notification if needed
      *
      * @return true if instrument is out of date
      * @throws Exception On badness
      */
     private boolean checkInstrument(InstrumentData instrument,
-                                    boolean storeTimeseries,
+                                    boolean storeTimeSeries,
                                     boolean addNotification)
             throws Exception {
         //Find the station entries
@@ -1404,7 +1414,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                            instrument.ldm);
         }
 
-        if (storeInstrumentStatus && (storeTimeseries || changed)) {
+        if (storeInstrumentStatus && (storeTimeSeries || changed)) {
             RdxInstrumentLogImpl.store(repository, entry);
         }
 

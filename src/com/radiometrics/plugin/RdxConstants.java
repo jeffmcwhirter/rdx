@@ -95,6 +95,10 @@ public interface RdxConstants {
     public String PROP_INSTRUMENT_LOG_INTERVAL =
         "rdx.instrument.log.interval";
 
+    /** _more_          */
+    public String PROP_INSTRUMENT_LOG_LASTTIME =
+        "rdx.instrument.log.lasttime";
+
 
     /** defaults for wiki properties */
     public String DEFAULT_COLORS = "green,yellow,red,purple";
