@@ -20,10 +20,22 @@ The :rem are comments (ala DOS comments)
 -->
      <wiki><![CDATA[
 +section title={{name}}
-:rem Show the reload facility
-:reload seconds=30 showCheckbox=true showLabel=true
-:rem Include the entry description and treat it as wiki text
 {{description wikify=true}}
+<table width=100%><tr valign=top>
+<td width=50%>
++accordian collapsible=true activeSegment=-1 decorate=false
++segment Notifications
+<a href="/repository/metadata/form?entryid={{entryid}}">Edit</a>
+<a href="/repository/metadata/addform?entryid={{entryid}}&metadata_type=rdx_notification">Add</a>
+<div style="max-height:180px;overflow-y:auto;">
+{{properties separator="<div class='ramadda-line'></div>" metadata.types="rdx_notification" message="No notifications" }}
+-segment
+-accordian
+</td>
+<td width=50% align=right>
+:reload seconds=30 showCheckbox=true showLabel=true
+</td></tr></table>
+:rem Include the entry description and treat it as wiki text
 :rem These properties say to use the children of this group as data
 {{property name=doEntries value=true}}
 {{property name=addAttributes value=true}} 
