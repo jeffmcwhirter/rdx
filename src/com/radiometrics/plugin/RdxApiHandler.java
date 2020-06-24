@@ -888,26 +888,21 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                + log, HU.style("text-align:center;margin-bottom:8px;"));
 
         if (getTestMode()) {
-            String link = !request.isAdmin()
-                          ? ""
-                          : HU
-                          .button(HU
-                              .href(HU
-                                  .url(fullPath(PATH_CHANGEINSTRUMENTS),
-                                      ARG_RANDOMIZE,
-                                      "true"), "Randomize timestamps")) + HU
-                                          .space(2) + HU
-                                          .button(HU
-                                              .href(HU
-                                                  .url(fullPath(PATH_CHANGEINSTRUMENTS),
-                                                      ARG_RANDOMIZE,
-                                                      "false"), "Update timestamps"));
-            link += SPACE;
-            link += HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
-                                             ARG_TESTNOTIFICATIONS,
-                                             "true"), "Test notifications"));
-            HU.div(sb, messageBlank("Running in test mode " + SPACE + link),
-                   HU.style("text-align:center;"));
+            String links = "";
+	    if(request.isAdmin()) {
+		links += SPACE;
+		links += HU.button(HU.href(HU.url(fullPath(PATH_CHANGEINSTRUMENTS),
+                                      ARG_RANDOMIZE, "true"), "Randomize timestamps"));
+		links +=  SPACE;
+		links +=  HU.button(HU.href(HU.url(fullPath(PATH_CHANGEINSTRUMENTS),
+						   ARG_RANDOMIZE,
+						   "false"), "Update timestamps"));
+		links += SPACE;
+		links += HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
+						  ARG_TESTNOTIFICATIONS,
+						  "true"), "Test notifications"));
+	    }
+	    HU.div(sb, messageBlank("Running in test mode " + links), HU.style("text-align:center;"));
         }
 
         if (request.isAdmin()) {
