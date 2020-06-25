@@ -90,21 +90,33 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
     /**
      * _more_
      *
-     * @param columnNodes _more_
+     * @param column _more_
      *
-     * @throws Exception _more_
+     * @return _more_
      */
     @Override
-    public void initColumns(List<Element> columnNodes) throws Exception {
-        super.initColumns(columnNodes);
-        Column col = findColumn("properties");
-        if (col != null) {
-            col.setEditable(false);
+    public boolean getEditable(Column column) {
+        if (column.getName().equals("properties")) {
+            return false;
         }
-        col = findColumn("numberofpoints");
-        if (col != null) {
-            col.setEditable(false);
+        if (column.getName().equals("numberofpoints")) {
+            return false;
         }
+
+        return super.getEditable(column);
+    }
+
+
+    /**
+     * _more_
+     *
+     * @param column _more_
+     *
+     * @return _more_
+     */
+    @Override
+    public boolean getCanDisplay(Column column) {
+        return getEditable(column);
     }
 
 
