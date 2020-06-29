@@ -101,7 +101,7 @@ public interface RdxConstants {
 
 
     /** defaults for wiki properties */
-    public String DEFAULT_COLORS = "green,yellow,red,purple";
+    public String DEFAULT_COLORS = "#008000,#FFFF00,#FF0000,#800080";
 
     /** defaults for wiki properties */
     public String DEFAULT_COLORSTEPS = "15,60,720";
