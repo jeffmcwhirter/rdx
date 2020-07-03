@@ -20,6 +20,7 @@ import ucar.unidata.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 
 import java.text.SimpleDateFormat;
@@ -44,7 +45,7 @@ import java.util.TimeZone;
 public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         RequestHandler {
 
-    /** _more_          */
+    /** _more_ */
     private static boolean testMode;
 
     /** rolling in memory log */
@@ -235,7 +236,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         testMode = getTestMode();
         //Change the test db if in test mode
         if (testMode) {
-	    processChangeInstruments(null);
+            processChangeInstruments(null);
         }
 
         Misc.run(new Runnable() {
@@ -877,10 +878,17 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 ? on
                 : off);
 
+        String schema = HU.href(fullPath(PATH_SCHEMA), "Schema",
+                                path.equals(PATH_SCHEMA)
+                                ? on
+                                : off);
+
+
+
         String sep = SPACE + "|" + SPACE;
         HU.sectionTitle(sb, "");
-        HU.div(sb,
-               instruments + sep + notifications + sep + settings + sep
+        HU.div(sb, instruments + sep + notifications + sep + schema + sep
+               + settings + sep
                + log, HU.style("text-align:center;margin-bottom:8px;"));
 
         if (getTestMode()) {
@@ -1196,20 +1204,80 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         return new Result(title, sb);
     }
 
+
+    /**
+     * _more_
+     *
+     * @param table _more_
+     *
+     * @return _more_
+     *
+     * @throws Exception _more_
+     */
+    public String showTable(String table) throws Exception {
+        Connection connection = getRdxConnection();
+        try {
+            return getDatabaseManager().showTable(table, connection, null);
+        } finally {
+            closeRdxConnection(connection);
+        }
+    }
+
+
+
+    /**
+     * _more_
+     *
+     * @param request _more_
+     *
+     * @return _more_
+     *
+     * @throws Exception _more_
+     */
     public Result processSchema(Request request) throws Exception {
         String        title = TITLE + " - Schema";
         StringBuilder sb    = new StringBuilder();
         if ( !addHeader(request, sb, PATH_SCHEMA)) {
             return new Result(title, sb);
         }
-	if(testMode) {
+        if (testMode) {
             HU.center(sb, messageNote("Schema not available in test mode"));
-	} else {
-	    Connection connection = getRdxConnection();
-	    sb.append(getDatabaseManager().getDbMetaData(connection));
-	    closeRdxConnection(connection);
-	}
+            sb.append(HU.sectionClose());
+
+            return new Result(title, sb);
+        }
+        String[] tables = new String[] {
+            "schema", "instrument_data", "instrument_metadata",
+            "instrument_type", "maintenance_logs", "radiometer_health",
+            "server_status", "site_metadata"
+        };
+
+        String        tableArg = request.getString("table", null);
+        StringBuilder hdr      = new StringBuilder();
+        for (String table : tables) {
+            if (hdr.length() > 0) {
+                hdr.append(SPACE + "|" + SPACE);
+            }
+            if ( !Misc.equals(tableArg, table)) {
+                hdr.append(HU.href(fullPath(PATH_SCHEMA) + "?table=" + table,
+                                   Utils.makeLabel(table)));
+            } else {
+                hdr.append(HU.b(Utils.makeLabel(table)));
+            }
+        }
+        sb.append(HU.center(hdr.toString()));
+        sb.append("<br>");
+
+
+        if (Misc.equals(tableArg, "schema")) {
+            Connection connection = getRdxConnection();
+            sb.append(getDatabaseManager().getDbMetaData(connection));
+            closeRdxConnection(connection);
+        } else if (tableArg != null) {
+            sb.append(showTable(tableArg));
+        }
         sb.append(HU.sectionClose());
+
         return new Result(title, sb);
     }
 
