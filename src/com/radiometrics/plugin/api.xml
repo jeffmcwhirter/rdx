@@ -11,6 +11,8 @@ This can be overwritten (e.g., the /rdx/changeinstruments tag)
   <api request="/rdx/notifications"    method="processNotifications"/>  
   <api request="/rdx/log"    method="processLog" />
   <api request="/rdx/settings"    method="processSettings" />  
-  <api request="/rdx/changeinstruments"    method="processChangeInstruments" admin="true"/>    
+  <api request="/rdx/schema"    method="processSchema"/>      
+  <api request="/rdx/changeinstruments"    method="processChangeInstruments" admin="true"/>
+
 </api>
 

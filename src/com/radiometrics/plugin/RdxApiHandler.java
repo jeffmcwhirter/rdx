@@ -1,17 +1,6 @@
 /*
-* Copyright (c) 2008-2019 Geode Systems LLC
+* Copyright (c) 2020 Radiometrics Inc.
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-* 
-*     http://www.apache.org/licenses/LICENSE-2.0
-* 
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
 */
 
 package com.radiometrics.plugin;
@@ -54,6 +43,9 @@ import java.util.TimeZone;
  */
 public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         RequestHandler {
+
+    /** _more_          */
+    private static boolean testMode;
 
     /** rolling in memory log */
     private List<String> log = new ArrayList<String>();
@@ -240,9 +232,10 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         //Start running in 10 seconds to give the full repository time to start up
         int delayToStart = 10;
 
-        //Change the test db
-        if (getTestMode()) {
-            processChangeInstruments(null);
+        testMode = getTestMode();
+        //Change the test db if in test mode
+        if (testMode) {
+	    processChangeInstruments(null);
         }
 
         Misc.run(new Runnable() {
@@ -277,7 +270,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             }
         }
 
-
+        InstrumentData.init();
 
     }
 
@@ -291,6 +284,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * @return the color
      */
     public static String getColor(Date d) {
+        if (d == null) {
+            return "";
+        }
         int minutes = (int) ((new Date().getTime() - d.getTime()) / 1000
                              / 60);
         for (int i = 0; i < colorSteps.size(); i++) {
@@ -889,20 +885,26 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         if (getTestMode()) {
             String links = "";
-	    if(request.isAdmin()) {
-		links += SPACE;
-		links += HU.button(HU.href(HU.url(fullPath(PATH_CHANGEINSTRUMENTS),
-                                      ARG_RANDOMIZE, "true"), "Randomize timestamps"));
-		links +=  SPACE;
-		links +=  HU.button(HU.href(HU.url(fullPath(PATH_CHANGEINSTRUMENTS),
-						   ARG_RANDOMIZE,
-						   "false"), "Update timestamps"));
-		links += SPACE;
-		links += HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
-						  ARG_TESTNOTIFICATIONS,
-						  "true"), "Test notifications"));
-	    }
-	    HU.div(sb, messageBlank("Running in test mode " + links), HU.style("text-align:center;"));
+            if (request.isAdmin()) {
+                links += SPACE;
+                links += HU.button(
+                    HU.href(
+                        HU.url(fullPath(PATH_CHANGEINSTRUMENTS),
+                               ARG_RANDOMIZE,
+                               "true"), "Randomize timestamps"));
+                links += SPACE;
+                links += HU.button(
+                    HU.href(
+                        HU.url(fullPath(PATH_CHANGEINSTRUMENTS),
+                               ARG_RANDOMIZE, "false"), "Update timestamps"));
+                links += SPACE;
+                links +=
+                    HU.button(HU.href(HU.url(fullPath(PATH_NOTIFICATIONS),
+                                             ARG_TESTNOTIFICATIONS,
+                                             "true"), "Test notifications"));
+            }
+            HU.div(sb, messageBlank("Running in test mode " + links),
+                   HU.style("text-align:center;"));
         }
 
         if (request.isAdmin()) {
@@ -1193,6 +1195,24 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         return new Result(title, sb);
     }
+
+    public Result processSchema(Request request) throws Exception {
+        String        title = TITLE + " - Schema";
+        StringBuilder sb    = new StringBuilder();
+        if ( !addHeader(request, sb, PATH_SCHEMA)) {
+            return new Result(title, sb);
+        }
+	if(testMode) {
+            HU.center(sb, messageNote("Schema not available in test mode"));
+	} else {
+	    Connection connection = getRdxConnection();
+	    sb.append(getDatabaseManager().getDbMetaData(connection));
+	    closeRdxConnection(connection);
+	}
+        sb.append(HU.sectionClose());
+        return new Result(title, sb);
+    }
+
 
     /**
      * Handle the  /rdx/settings request
@@ -1653,6 +1673,19 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
 
 
+    /**
+     * _more_
+     *
+     * @return _more_
+     */
+    public static String getDbPrefix() {
+        return testMode
+               ? "rdx_test_"
+               : "";
+    }
+
+
+
 
     /**
      * Class description
@@ -1664,39 +1697,50 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     private static class InstrumentData {
 
         /** db table name */
-        public static final String TABLE = "rdx_test_instrument_data";
+        public static String TABLE;
 
         /** Other table to join with */
-        public static final String TABLE2 = "rdx_test_instrument_metadata";
+        public static String TABLE2;
 
         /** db column name */
-        public static final String COLUMN_SITE_ID = TABLE2 + ".site_id";
+        public static String COLUMN_SITE_ID;
 
         /** db column name */
-        public static final String COLUMN_TYPE_ID = TABLE2 + ".type_id";
+        public static String COLUMN_TYPE_ID;
 
         /** db column name */
-        public static final String COLUMN_INSTRUMENT_ID = TABLE
-                                                          + ".instrument_id";
+        public static String COLUMN_INSTRUMENT_ID;
 
         /** db column name */
-        public static final String COLUMN_LAST_NETWORK =
-            TABLE + ".last_network_time";
+        public static String COLUMN_LAST_NETWORK;
 
         /** db column name */
-        public static final String COLUMN_LAST_DATA = TABLE
-                                                      + ".last_data_time";
+        public static String COLUMN_LAST_DATA;
 
         /** db column name */
-        public static final String COLUMN_LAST_LDM = TABLE + ".last_ldm_time";
+        public static String COLUMN_LAST_LDM;
 
         /** Column selections */
-        public static final String WHAT = SqlUtil.comma(COLUMN_SITE_ID,
-                                              COLUMN_TYPE_ID,
-                                              COLUMN_INSTRUMENT_ID,
-                                              COLUMN_LAST_NETWORK,
-                                              COLUMN_LAST_DATA,
-                                              COLUMN_LAST_LDM);
+        public static String WHAT;
+
+
+        /**
+         * _more_
+         */
+        public static void init() {
+            TABLE                = getDbPrefix() + "instrument_data";
+            TABLE2               = getDbPrefix() + "instrument_metadata";
+            COLUMN_SITE_ID       = TABLE2 + ".site_id";
+            COLUMN_TYPE_ID       = TABLE2 + ".type_id";
+            COLUMN_INSTRUMENT_ID = TABLE + ".instrument_id";
+            COLUMN_LAST_NETWORK  = TABLE + ".last_network_time";
+            COLUMN_LAST_DATA     = TABLE + ".last_data_time";
+            COLUMN_LAST_LDM      = TABLE + ".last_ldm_time";
+            WHAT = SqlUtil.comma(COLUMN_SITE_ID, COLUMN_TYPE_ID,
+                                 COLUMN_INSTRUMENT_ID, COLUMN_LAST_NETWORK,
+                                 COLUMN_LAST_DATA, COLUMN_LAST_LDM);
+        }
+
 
         /** instrument attribute */
         String siteId;

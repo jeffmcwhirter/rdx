@@ -29,6 +29,7 @@ public interface RdxConstants {
     /** lists log. defined in api.xml */
     public String PATH_LOG = "/rdx/log";
 
+    public String PATH_SCHEMA = "/rdx/schema";
 
     /** randomly changes instruments. defined in api.xml */
     public String PATH_CHANGEINSTRUMENTS = "/rdx/changeinstruments";
@@ -95,7 +96,7 @@ public interface RdxConstants {
     public String PROP_INSTRUMENT_LOG_INTERVAL =
         "rdx.instrument.log.interval";
 
-    /** _more_          */
+    /** _more_ */
     public String PROP_INSTRUMENT_LOG_LASTTIME =
         "rdx.instrument.log.lasttime";
 
