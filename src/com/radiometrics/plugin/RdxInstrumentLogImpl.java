@@ -10,6 +10,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 
 import org.ramadda.repository.*;
 import org.ramadda.repository.type.*;
+import org.ramadda.util.Utils;
 import org.ramadda.util.sql.Clause;
 import org.ramadda.util.sql.SqlUtil;
 
@@ -73,15 +74,15 @@ public class RdxInstrumentLogImpl extends RdxInstrumentLog {
         repository.getDatabaseManager().executeInsert(insert, new Object[] {
             entry.getId(), now,
             entry.getValue(RdxInstrumentTypeHandler.IDX_INSTRUMENT_ID),
-            RdxApiHandler.getElapsedMinutes(
+            Utils.getElapsedMinutes(
                 now,
                 (Date) entry.getValue(
                     RdxInstrumentTypeHandler.IDX_LAST_NETWORK)),
-            RdxApiHandler.getElapsedMinutes(
+            Utils.getElapsedMinutes(
                 now,
                 (Date) entry.getValue(
                     RdxInstrumentTypeHandler.IDX_LAST_DATA)),
-            RdxApiHandler.getElapsedMinutes(
+            Utils.getElapsedMinutes(
                 now,
                 (Date) entry.getValue(RdxInstrumentTypeHandler.IDX_LAST_LDM)),
         });

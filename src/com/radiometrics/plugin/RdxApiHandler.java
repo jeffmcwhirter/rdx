@@ -9,7 +9,6 @@ package com.radiometrics.plugin;
 import org.ramadda.repository.*;
 import org.ramadda.repository.admin.MailManager;
 import org.ramadda.repository.metadata.*;
-import org.ramadda.util.HtmlUtils;
 import org.ramadda.util.Utils;
 import org.ramadda.util.sql.Clause;
 import org.ramadda.util.sql.SqlUtil;
@@ -20,7 +19,6 @@ import ucar.unidata.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 
 import java.text.SimpleDateFormat;
@@ -140,12 +138,12 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         super(repository);
         //Ensure the singleton
         if (haveCreatedApiHandler) {
+            System.err.println(
+                "Error: multiple instances of RdxApiHandler have been created");
+
             return;
         }
         haveCreatedApiHandler = true;
-        timeZone = TimeZone.getTimeZone(
-            getRepository().getProperty(PROP_RDX_TIMEZONE, "America/Denver"));
-
         colors =
             StringUtil.split(getRepository().getProperty("rdx.wiki.colors",
                 DEFAULT_COLORS), ",", true, true);
@@ -159,6 +157,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             colorSteps.add(new Integer(step));
         }
 
+
+        timeZone = TimeZone.getTimeZone(
+            getRepository().getProperty(PROP_RDX_TIMEZONE, "America/Denver"));
 
         sdf = new SimpleDateFormat(
             getRepository().getProperty(
@@ -663,7 +664,8 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 sendSms = true;
             }
             //Check the time
-            long elapsedMinutes = getElapsedMinutes(now, lastMessageDate);
+            long elapsedMinutes = Utils.getElapsedMinutes(now,
+                                      lastMessageDate);
             shouldSend = elapsedMinutes >= interval;
             //log(logSB,  "Elapsed minutes:" + elapsedMinutes + " interval:" + interval + " should send:" + shouldSend);
         }
@@ -1282,6 +1284,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     }
 
 
+
+
+
     /**
      * Handle the  /rdx/settings request
      *
@@ -1303,19 +1308,27 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
                 : "Off", "Monitoring notifications:", monitorNotifications
                 ? "On"
                 : "Off", "RDX DB scan interval:",
-                         instrumentInterval + " minutes",
-                         "Network threshold:", networkThreshold + " minutes",
-                         "Data threshold:", dataThreshold + " minutes",
-                         "LDM threshold:", ldmThreshold + " minutes",
+                         Utils.formatMinutes(instrumentInterval),
+                         "Network threshold:",
+                         Utils.formatMinutes(networkThreshold),
+                         "Data threshold:",
+                         Utils.formatMinutes(dataThreshold),
+                         "LDM threshold:", Utils.formatMinutes(ldmThreshold),
                          "Email enabled:", getMailManager().isEmailEnabled()
                                            ? "Yes"
                                            : "No", "SMS enabled:",
                                            getMailManager().isSmsEnabled()
                                            ? "Yes"
-                                           : "No", "# Emails to send:", notificationCountEmail, "Interval between emails:", notificationIntervalEmail
-                                           + " minutes", "# SMS messages to send:", notificationCountSms, "Interval until first SMS sent:", notificationFirstIntervalSms
-                                               + " minutes", "Interval between SMS messages:", notificationIntervalSms
-                                                   + " minutes");
+                                           : "No", "# Emails to send:",
+                                           notificationCountEmail,
+                                           "Interval between emails:",
+                                           Utils.formatMinutes(notificationIntervalEmail),
+                                           "# SMS messages to send:",
+                                           notificationCountSms,
+                                           "Interval until first SMS sent:",
+                                           Utils.formatMinutes(notificationFirstIntervalSms),
+                                           "Interval between SMS messages:",
+                                           Utils.formatMinutes(notificationIntervalSms));
         sb.append(HU.formTableClose());
         sb.append(HU.sectionClose());
 
@@ -1337,7 +1350,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         Date    now             = new Date();
         //Check to see if we should store the time series values
         if (timeSinceLastInstrumentStore != null) {
-            int elapsedTime = getElapsedMinutes(now,
+            int elapsedTime = Utils.getElapsedMinutes(now,
                                   timeSinceLastInstrumentStore);
             storeTimeSeries = elapsedTime > storeInterval;
         } else {
@@ -1402,32 +1415,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     }
 
 
-    /**
-     * Utility to get the elapsed minutes
-     *
-     * @param date date
-     *
-     * @return Elapsed minutes
-     */
-    public static int getElapsedMinutes(Date date) {
-        return getElapsedMinutes(new Date(), date);
-    }
-
-    /**
-     * Utility to the the minutes between the given dates
-     *
-     * @param now date 1
-     * @param date date 2
-     *
-     * @return elapsed minutes
-     */
-    public static int getElapsedMinutes(Date now, Date date) {
-        if (date == null) {
-            return 0;
-        }
-
-        return (int) (now.getTime() - date.getTime()) / 1000 / 60;
-    }
 
     /**
      * Checks whether we need to send notifications for the given instrument entry
@@ -1439,13 +1426,13 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
      * @throws Exception On badness
      */
     private boolean isInstrumentOk(Entry entry) throws Exception {
-        int network = getElapsedMinutes(
+        int network = Utils.getElapsedMinutes(
                           (Date) entry.getValue(
                               RdxInstrumentTypeHandler.IDX_LAST_NETWORK));
-        int data = getElapsedMinutes(
+        int data = Utils.getElapsedMinutes(
                        (Date) entry.getValue(
                            RdxInstrumentTypeHandler.IDX_LAST_DATA));
-        int ldm = getElapsedMinutes(
+        int ldm = Utils.getElapsedMinutes(
                       (Date) entry.getValue(
                           RdxInstrumentTypeHandler.IDX_LAST_LDM));
 
@@ -1610,7 +1597,6 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         cal.setTime(new Date());
         boolean weekend = (cal.get(cal.DAY_OF_WEEK) == cal.SUNDAY)
                           || (cal.get(cal.DAY_OF_WEEK) == cal.SATURDAY);
-
 
         List<Metadata> metadataList =
             getMetadataManager().findMetadata(request, entry,
