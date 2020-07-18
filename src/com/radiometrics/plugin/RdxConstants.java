@@ -29,6 +29,7 @@ public interface RdxConstants {
     /** lists log. defined in api.xml */
     public String PATH_LOG = "/rdx/log";
 
+    /** _more_          */
     public String PATH_SCHEMA = "/rdx/schema";
 
     /** randomly changes instruments. defined in api.xml */
