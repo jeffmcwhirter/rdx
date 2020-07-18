@@ -1486,6 +1486,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         }
 
 
+        boolean wasOk = isInstrumentOk(entry);
         boolean changed = false;
 
         Date network =
@@ -1534,16 +1535,18 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         boolean ok = isInstrumentOk(entry);
         if (ok) {
             //If all OK then remove any pending notification and return
+	    if(!wasOk) {
+		log("checkInstrument: instrument is now ok: " + entry.getName());
+	    }
             deleteNotification(entry);
-
             return false;
         }
 
-        log("checkInstrument: adding notification for " + entry.getName());
 
         //Add the new notification if we don't have one already
         List<RdxNotifications> notifications = getNotifications(entry);
         if (notifications.size() == 0) {
+	    log("checkInstrument: adding notification: " + entry.getName());
             String insert =
                 SqlUtil.makeInsert(RdxNotifications.DB_TABLE_NAME,
                                    new String[] {
