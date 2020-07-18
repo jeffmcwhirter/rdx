@@ -20,14 +20,6 @@ Then restart the RAMADDA server. e.g.:
 <pre>sudo service ramadda start</pre>
 
 
-# Initial instrument content
-The initial instrument collection and associated content is provided as a RAMADDA export file. 
-This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
-<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) 
-choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) 
-select Import and upload the rdxexport.zip file.
-
-
 # Configuration
 Along with the rdxplugin.jar plugin file there is some further configuration to do - specify the external RDX database and configure email and SMS settings.
 These configuration options are set in the rdx.properties file 
@@ -101,6 +93,17 @@ twilio.authtoken=
 #Phone number twilio assigns you
 twilio.phone=
 </pre>
+
+
+# Initial instrument content
+The initial instrument collection and associated content is provided as a RAMADDA export file. 
+This is based on the example content at <a href="https://geodesystems.com/repository/a/rdxnmp">https://geodesystems.com/repository/a/rdxnmp</a>. Download the
+<a href="https://github.com/jeffmcwhirter/rdx/blob/master/lib/rdxexport.zip">rdxexport.zip</a> file. Then, from your RAMADDA (assuming you are logged in) 
+choose a folder to hold the content then from the folder's popup menu button (<img width=20 src="https://geodesystems.com/repository/icons/entrymenu.png">) 
+select Import and upload the rdxexport.zip file.
+
+## Configuring notification messaging 
+Once imported navigate to the Instrument Collection entry. Go to the Edit Properties page (from the entry popup menu) and change the "Some user" notification information to the desired values. Also, if you need more than one notification then go popup the entry menu and select "Add Notification". Important: make sure you click on the  "Inherited" checkbox.
 
 
 # Building the plugin
