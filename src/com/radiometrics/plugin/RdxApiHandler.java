@@ -853,15 +853,20 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
     private boolean addHeader(Request request, Appendable sb, String path)
             throws Exception {
 
-        request.put(ARG_TEMPLATE, TEMPLATE_RADIOMETRICS);
-        sb.append(HU.sectionOpen(null, false));
         String on =
             HU.style(
-                "display:inline-block;background:#eee; font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
+                "text-decoration:none;display:inline-block;background:#eee; font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
         String off =
             HU.style(
-                "display:inline-block;font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
+                "text-decoration:none;display:inline-block;font-size:16pt; padding-left:4px;padding-right:4px;margin-top:4px;");
 
+        request.put(ARG_TEMPLATE, TEMPLATE_RADIOMETRICS);
+	String title = this.getRepository().getProperty("rdx.title","Radiometrics National Mesonet Program Monitor");
+	String home = HU.href(getRepository().getUrlBase()+"/a/rdxnmp",title,"class=ramadda-page-title style='text-decoration:none;'");
+	sb.append(HU.open("div","class=ramadda-section"));
+        sb.append(HU.center(home));
+
+	home = HU.href(getRepository().getUrlBase()+"/a/rdxnmp","Home",off);
         String notifications = HU.href(fullPath(PATH_NOTIFICATIONS),
                                        "Notifications",
                                        path.equals(PATH_NOTIFICATIONS)
@@ -889,7 +894,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
 
         String sep = SPACE + "|" + SPACE;
         HU.sectionTitle(sb, "");
-        HU.div(sb, instruments + sep + notifications + sep + schema + sep
+        HU.div(sb, home  + sep + instruments + sep + notifications + sep + schema + sep
                + settings + sep
                + log, HU.style("text-align:center;margin-bottom:8px;"));
 
