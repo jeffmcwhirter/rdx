@@ -223,7 +223,7 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
          * @throws Exception On badness
          */
         @Override
-        public boolean skip(VisitInfo visitInfo, Record record, int howMany)
+        public boolean skip(VisitInfo visitInfo, BaseRecord record, int howMany)
                 throws Exception {
             //noop as the DB call does this
             return true;
