@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -177,7 +178,8 @@ public class RdxInstrumentTypeHandler extends PointTypeHandler {
      * @throws Exception On badness
      */
     @Override
-    public RecordFile doMakeRecordFile(Request request, Entry entry)
+    public RecordFile doMakeRecordFile(Request request, Entry entry, Hashtable properties,
+                                       Hashtable requestProperties)
             throws Exception {
         return new RdxRecordFile(request, entry);
     }
