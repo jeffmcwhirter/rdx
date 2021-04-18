@@ -1404,10 +1404,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         String id = instrument.siteId;
         tmpRequest.put("search.rdx_instrument.instrument_id",
                        "\"" + id + "\"");
-        List[]      result  = getEntryManager().getEntries(tmpRequest);
-        List<Entry> entries = new ArrayList<Entry>();
-        entries.addAll((List<Entry>) result[0]);
-        entries.addAll((List<Entry>) result[1]);
+        List<Entry> entries  = getEntryManager().getEntries(tmpRequest);
         if (entries.size() == 0) {
             return null;
         }
