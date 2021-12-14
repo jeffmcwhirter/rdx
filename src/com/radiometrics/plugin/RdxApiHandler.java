@@ -323,7 +323,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
             log.remove(0);
         }
         log.add(line);
-        System.err.println("RDX: " + line);
+        getRepository().getLogManager().logInfo("RDX: " + line);
     }
 
     /**
