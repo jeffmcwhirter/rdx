@@ -7,6 +7,7 @@ package com.radiometrics.plugin;
 
 
 import org.ramadda.repository.*;
+import org.ramadda.repository.type.*;
 import org.ramadda.repository.admin.MailManager;
 import org.ramadda.repository.metadata.*;
 import org.ramadda.util.Utils;
@@ -237,6 +238,7 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         testMode = getTestMode();
         //Change the test db if in test mode
         if (testMode) {
+	    InstrumentData.init();
             processChangeInstruments(null);
         }
 
@@ -1404,7 +1406,9 @@ public class RdxApiHandler extends RepositoryManager implements RdxConstants,
         String id = instrument.siteId;
         tmpRequest.put("search.rdx_instrument.instrument_id",
                        "\"" + id + "\"");
-        List<Entry> entries  = getEntryManager().getEntries(tmpRequest);
+	TypeHandler typeHandler = getRepository().getTypeHandler("rdx_instrument");
+	List<Clause> clauses = typeHandler.assembleWhereClause(tmpRequest);
+        List<Entry> entries  = getEntryManager().getEntriesFromDb(tmpRequest,clauses,typeHandler);
         if (entries.size() == 0) {
             return null;
         }
